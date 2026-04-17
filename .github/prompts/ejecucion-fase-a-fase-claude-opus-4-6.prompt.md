@@ -47,6 +47,8 @@ Implementar SECCAP de manera incremental, respetando la arquitectura ya definida
   - endpoints separados de detalle, certificado, auditoria y health
 - No atomices endpoints por filtro individual.
 - No introduzcas GraphQL, microservicios ni replicacion local del padron.
+- Todo el codigo ejecutable debe quedar dentro de `SECCAP/`.
+- No crear `frontend/`, `backend/` ni `mock-api/` en la raiz del repo.
 
 ## Regla de colaboracion con otro agente
 - Revisa `git status` antes de empezar.
@@ -73,12 +75,12 @@ No intentes cerrar frontend, backend, mock, auth y auditoria en un solo turno.
 
 ### Fase 2.1 - Estructura base del repo
 Crear, si no existen:
-- `frontend/`
-- `backend/`
-- `mock-api/`
-- `docs/` o `docs-tecnicos/`
-- templates `.env.example`
-- `README.md` tecnico de arranque
+- `SECCAP/frontend/`
+- `SECCAP/backend/`
+- `SECCAP/mock-api/`
+- `SECCAP/docs-tecnicos/`
+- `SECCAP/.env.example`
+- `SECCAP/README.md` tecnico de arranque
 
 Definition of Done:
 - scaffolding inicial operativo
@@ -102,7 +104,7 @@ Definition of Done:
 - sin tablas de datos maestros de personal
 
 ### Fase 2.3 - Mock API del Area de Personal
-Implementar `mock-api/` como servicio separado.
+Implementar `SECCAP/mock-api/` como servicio separado.
 
 Endpoints minimos del mock:
 - `GET /externa/v1/catalogos/tipos-formacion`

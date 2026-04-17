@@ -19,6 +19,18 @@ Definir un plan ejecutable para construir la primera version funcional de SECCAP
 - autenticacion local, RBAC, auditoria y health check
 - sin persistir datos de personal en la BD local
 
+## Restriccion estructural del repositorio
+Toda la implementacion ejecutable debe vivir dentro de la carpeta `SECCAP/`.
+
+La estructura objetivo es:
+
+- `SECCAP/frontend/`
+- `SECCAP/backend/`
+- `SECCAP/mock-api/`
+- `SECCAP/docs-tecnicos/`
+
+No propongas crear `frontend/`, `backend/` ni `mock-api/` en la raiz del repositorio.
+
 ## Documentos obligatorios a leer antes de planificar
 - [Contexto.md](../../Contexto.md)
 - [ANTEPROYECTO/05_requisitos_funcionales.md](../../ANTEPROYECTO/05_requisitos_funcionales.md)
@@ -45,7 +57,7 @@ Definir un plan ejecutable para construir la primera version funcional de SECCAP
 ### 1. Definir la estrategia general de implementacion
 Debes decidir y justificar:
 
-- estructura inicial del repositorio
+- estructura inicial del repositorio dentro de `SECCAP/`
 - orden correcto de fases de implementacion
 - que se implementa primero para destrabar el proyecto
 - que depende del mock y que depende del acceso real al Area de Personal

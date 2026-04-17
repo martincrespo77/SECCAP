@@ -1,0 +1,143 @@
+@startuml
+title SECCAP - Diagrama Entidad-Relación de la BD Local
+top to bottom direction
+skinparam linetype ortho
+
+entity "sys_usuario" as usuario {
+  * **id** : serial <<PK>>
+  --
+  * username : varchar(50) <<UNIQUE>>
+  * password_hash : varchar(255)
+  * nombre_completo : varchar(150)
+  * email : varchar(150)
+  * activo : boolean
+  * intentos_fallidos : smallint
+  * bloqueado_hasta : timestamp
+  * creado_en : timestamp
+  * actualizado_en : timestamp
+}
+
+entity "sys_rol" as rol {
+  * **id** : serial <<PK>>
+  --
+  * nombre : varchar(50) <<UNIQUE>>
+  * descripcion : varchar(255)
+  * activo : boolean
+  * creado_en : timestamp
+}
+
+entity "sys_permiso" as permiso {
+  * **id** : serial <<PK>>
+  --
+  * codigo : varchar(80) <<UNIQUE>>
+  * modulo : varchar(50)
+  * descripcion : varchar(255)
+}
+
+entity "sys_usuario_rol" as usuario_rol {
+  * **id_usuario** : int <<FK>>
+  * **id_rol** : int <<FK>>
+  --
+  asignado_en : timestamp
+  asignado_por : int <<FK>>
+}
+
+entity "sys_rol_permiso" as rol_permiso {
+  * **id_rol** : int <<FK>>
+  * **id_permiso** : int <<FK>>
+}
+
+entity "sys_sesion" as sesion {
+  * **id** : serial <<PK>>
+  --
+  * id_usuario : int <<FK>>
+  * token_hash : varchar(255)
+  * ip_origen : varchar(45)
+  * user_agent : varchar(255)
+  * creada_en : timestamp
+  * expira_en : timestamp
+  * activa : boolean
+  revocada_en : timestamp
+}
+
+entity "audit_log" as auditoria {
+  * **id** : bigserial <<PK>>
+  --
+  * id_usuario : int <<FK>>
+  * timestamp_utc : timestamp
+  * accion : varchar(50)
+  * endpoint : varchar(200)
+  * metodo_http : varchar(10)
+  * filtros_aplicados : jsonb
+  * status_code : smallint
+  * resultado : varchar(20)
+  * cantidad_registros : int
+  * ip_origen : varchar(45)
+  * user_agent : varchar(255)
+  duracion_ms : int
+}
+
+entity "sys_configuracion" as config {
+  * **clave** : varchar(100) <<PK>>
+  --
+  * valor : text
+  * tipo : varchar(20)
+  * descripcion : varchar(255)
+  * modificable_en_runtime : boolean
+  actualizado_en : timestamp
+}
+
+entity "cache_catalogo" as cache {
+  * **id** : serial <<PK>>
+  --
+  * tipo_catalogo : varchar(80) <<UNIQUE>>
+  * contenido_json : jsonb
+  * origen : varchar(50)
+  * cargado_en : timestamp
+  * ttl_segundos : int
+  * vigente : boolean
+}
+
+' ── Relaciones ──
+
+usuario ||--o{ usuario_rol : "tiene"
+rol ||--o{ usuario_rol : "asignado a"
+rol ||--o{ rol_permiso : "incluye"
+permiso ||--o{ rol_permiso : "otorgado a"
+usuario ||--o{ sesion : "inicia"
+usuario ||--o{ auditoria : "genera"
+
+' ── Notas ──
+
+note bottom of auditoria
+  **Tabla inmutable (solo INSERT)**
+  No se permiten UPDATE ni DELETE.
+  Todos los campos NOT NULL excepto duracion_ms.
+  Columna filtros_aplicados almacena
+  el JSON enviado por el usuario.
+end note
+
+note bottom of cache
+  Almacena catálogos auxiliares
+  (categorías militares, idiomas, etc.)
+  con TTL configurable.
+  No contiene datos de personal.
+end note
+
+note right of usuario
+  **La BD local NO almacena datos
+  maestros del personal.**
+  Solo contiene información
+  operativa del sistema SECCAP.
+end note
+
+note right of config
+  Ejemplos de claves:
+  - api.base_url
+  - api.timeout_ms
+  - sesion.duracion_minutos
+  - auditoria.retencion_dias
+  - cache.ttl_default
+end note
+
+@enduml

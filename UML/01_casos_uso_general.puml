@@ -1,0 +1,98 @@
+@startuml
+title SECCAP - Diagrama de casos de uso general
+left to right direction
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+
+actor "Usuario del sistema" as Usuario
+actor "Administrador" as Admin
+actor "Consultor" as Consultor
+actor "Auditor" as Auditor
+actor "API Institucional RRHH" as Api
+actor "Modulo de Auditoria Local" as Audit
+
+Usuario <|-- Admin
+Usuario <|-- Consultor
+Usuario <|-- Auditor
+
+rectangle "SECCAP" {
+  usecase "Iniciar sesion" as UC01
+  usecase "Cerrar sesion" as UC02
+  usecase "Seleccionar tipo de formacion" as UC03
+  usecase "Cargar catalogos\ndependientes" as UC04
+  usecase "Aplicar filtros\nde consulta" as UC05
+  usecase "Ejecutar consulta" as UC06
+  usecase "Ver resultados" as UC07
+  usecase "Ver detalle\nde registro" as UC08
+  usecase "Descargar documento\nrespaldatorio" as UC09
+  usecase "Consultar logs\nde auditoria" as UC10
+  usecase "Gestionar usuarios" as UC11
+  usecase "Gestionar roles\ny permisos" as UC12
+  usecase "Verificar estado\ndel sistema" as UC13
+  usecase "Registrar auditoria" as UC14
+  usecase "Gestionar error de\nintegracion" as UC15
+}
+
+Usuario --> UC01
+Usuario --> UC02
+
+Consultor --> UC03
+Consultor --> UC05
+Consultor --> UC06
+Consultor --> UC07
+Consultor --> UC08
+Consultor --> UC09
+
+Admin --> UC03
+Admin --> UC05
+Admin --> UC06
+Admin --> UC07
+Admin --> UC08
+Admin --> UC09
+
+Auditor --> UC10
+
+Admin --> UC10
+Admin --> UC11
+Admin --> UC12
+Admin --> UC13
+
+Api --> UC04
+Api --> UC06
+Api --> UC08
+Api --> UC09
+Api --> UC13
+Api --> UC15
+
+Audit --> UC14
+Audit --> UC15
+
+UC05 .> UC04 : <<include>>
+UC06 .> UC14 : <<include>>
+UC06 .> UC15 : <<extend>>
+UC09 .> UC14 : <<include>>
+UC08 .> UC09 : <<extend>>
+UC11 .> UC14 : <<include>>
+UC12 .> UC14 : <<include>>
+
+note bottom of UC06
+  El backend valida filtros,
+  consulta la API institucional,
+  poda la respuesta segun rol
+  y registra auditoria.
+end note
+
+note left of Admin
+  El Administrador conserva
+  funciones de consulta ademas
+  de las tareas de gestion y auditoria.
+end note
+
+note right of UC04
+  Los catalogos se cargan desde
+  fuentes oficiales o API.
+  No se hardcodean si existe
+  origen institucional confiable.
+end note
+
+@enduml

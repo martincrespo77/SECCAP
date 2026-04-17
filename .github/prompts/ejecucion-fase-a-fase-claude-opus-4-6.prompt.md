@@ -53,10 +53,14 @@ Implementar SECCAP de manera incremental, respetando la arquitectura ya definida
 ## Regla de colaboracion con otro agente
 - Revisa `git status` antes de empezar.
 - Revisa `COORDINACION_IA.md` antes de elegir tarea.
+- Asume este esquema fijo:
+  - Claude implementa
+  - Codex revisa
 - Si hay cambios ajenos en archivos fuera de tu alcance, no los toques.
 - Si hay cambios ajenos en el mismo archivo que necesitas editar, no los pises: adapta tu trabajo o deja bloqueo explicito.
 - Al final de cada turno, actualiza `COORDINACION_IA.md` con objetivo, archivos leidos, archivos modificados, decisiones, pendientes y siguiente paso.
 - Si corresponde a una fase formal, actualiza tambien `TRAZABILIDAD/fase-X-*.md`.
+- No avances a una segunda subfase grande sin dejar primero el resultado listo para revision de Codex.
 
 ## Forma de ejecutar cada turno
 En cada ejecucion debes hacer exactamente esto:
@@ -67,7 +71,7 @@ En cada ejecucion debes hacer exactamente esto:
 4. Implementar solo ese slice, sin mezclar dos subfases grandes.
 5. Ejecutar validaciones reales sobre lo tocado.
 6. Dejar handoff y pendientes.
-7. Detenerte.
+7. Detenerte y dejar el trabajo listo para revision por Codex.
 
 No intentes cerrar frontend, backend, mock, auth y auditoria en un solo turno.
 
@@ -346,6 +350,7 @@ Al finalizar cada turno debes entregar:
 5. decisiones tecnicas tomadas
 6. pendientes concretos
 7. siguiente subfase recomendada
+8. puntos que Codex deberia revisar con foco tecnico
 
 ## Si aparece un bloqueo
 Si se bloquea una fase por dependencia externa:

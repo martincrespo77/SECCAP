@@ -6,6 +6,28 @@ Este archivo es la bitacora operativa compartida entre Codex y Claude para traba
 ## Regla basica
 No usar `Contexto.md` como canal de coordinacion diaria. Ese archivo ya funciona como base de contexto amplia. La coordinacion de trabajo entre asistentes debe quedar aca.
 
+## Modo operativo vigente
+- Implementacion tecnica del sistema: Claude
+- Revision tecnica, control de arquitectura, consistencia y analisis de resultados: Codex
+- Carpeta obligatoria para todo el codigo ejecutable: `SECCAP/`
+- Carpeta raiz del repo: conserva documentacion, UML, trazabilidad, prompts y coordinacion
+
+## Punto de inicio actual
+- Estado actual: no existe implementacion real todavia; solo base documental, UML, prompts y carpeta `SECCAP/` preparada como raiz tecnica.
+- Proximo agente que debe trabajar: Claude
+- Proxima subfase a ejecutar: `Fase 2.1 - Estructura base del repo`
+- Alcance de esa subfase:
+  - crear `SECCAP/frontend/`
+  - crear `SECCAP/backend/`
+  - crear `SECCAP/mock-api/`
+  - crear `SECCAP/docs-tecnicos/`
+  - crear `SECCAP/.env.example`
+  - completar `SECCAP/README.md` tecnico de arranque
+- Prompt que debe seguir Claude:
+  - `.github/prompts/ejecucion-fase-a-fase-claude-opus-4-6.prompt.md`
+- Regla de parada:
+  - Claude implementa solo una subfase por turno, valida, actualiza esta bitacora y se detiene para revision de Codex.
+
 ## Protocolo de uso
 1. Leer este archivo completo antes de empezar a trabajar.
 2. Agregar una nueva entrada al final. No borrar historial.
@@ -22,9 +44,28 @@ No usar `Contexto.md` como canal de coordinacion diaria. Ese archivo ya funciona
 5. Al terminar, debe dejar otra entrada de "cierro esta tarea" con resultado concreto.
 6. Si hay duda o conflicto, no improvisar: dejarlo escrito en este archivo.
 
+## Ciclo obligatorio Claude -> Codex
+1. Claude lee `COORDINACION_IA.md` y toma la `Proxima subfase a ejecutar`.
+2. Claude implementa solo ese slice dentro de `SECCAP/`.
+3. Claude ejecuta validaciones reales.
+4. Claude deja en esta bitacora:
+   - que implemento
+   - que archivos toco
+   - que comandos ejecuto
+   - que salio bien
+   - que quedo pendiente
+   - cual es la proxima subfase sugerida
+5. Codex revisa el resultado de Claude:
+   - riesgos
+   - errores de arquitectura
+   - regresiones
+   - validaciones faltantes
+   - coherencia con requisitos y UML
+6. Solo despues de esa revision, Claude toma la siguiente subfase.
+
 ## Convencion recomendada
-- Codex: analisis de repo, estructura, consistencia, cambios puntuales, trazabilidad, revision tecnica.
-- Claude: redaccion extensa, expansion documental, reformulacion, propuestas alternativas, sintesis de alto nivel.
+- Codex: no implementa codigo salvo pedido explicito del usuario. Su funcion principal es revisar lo hecho por Claude, detectar riesgos, exigir consistencia tecnica y cuidar arquitectura, trazabilidad y calidad.
+- Claude: implementa todo el sistema por fases dentro de `SECCAP/`, respetando prompts, arquitectura y handoff obligatorio.
 - Ambos: no modificar el mismo archivo al mismo tiempo.
 
 ## Estado actual del repositorio
@@ -295,3 +336,25 @@ La forma sana de combinar dos chats aislados no es que ambos "piensen juntos" en
   - tras la regeneracion ya no aparecen secuencias corruptas tipicas del caso anterior.
 - Pendientes:
   - si el usuario quiere un borrador presentable, hacer una segunda pasada editorial para homogeneizar estilo y eliminar repeticiones.
+
+### Entrada 006 - Codex - fijacion del flujo Claude implementa / Codex revisa
+- Fecha y hora: 17/04/2026
+- Objetivo: dejar formalizado en el repo que Claude implementa todo el sistema y Codex solo revisa resultados, usando `COORDINACION_IA.md` como punto de arranque operativo.
+- Archivos leidos:
+  - `COORDINACION_IA.md`
+  - `.github/prompts/planmode-implementacion-mock-api-claude-opus-4-6.prompt.md`
+  - `.github/prompts/ejecucion-fase-a-fase-claude-opus-4-6.prompt.md`
+- Archivos modificados:
+  - `COORDINACION_IA.md`
+  - `.github/prompts/ejecucion-fase-a-fase-claude-opus-4-6.prompt.md`
+  - `.github/prompts/inicio-claude-implementador.prompt.md`
+- Decisiones tomadas:
+  - fijar roles no ambiguos: Claude implementa, Codex revisa;
+  - usar `COORDINACION_IA.md` como fuente operativa de "donde iniciar" y "que sigue";
+  - obligar a Claude a detenerse al final de cada subfase para revision tecnica de Codex;
+  - dejar una subfase inicial explicita: `Fase 2.1 - Estructura base del repo` dentro de `SECCAP/`.
+- Pendientes:
+  - que Claude ejecute la primera subfase pendiente;
+  - que Codex revise el primer resultado de implementacion y marque hallazgos antes de permitir la siguiente subfase.
+- Proximo paso sugerido:
+  - iniciar Claude con `.github/prompts/inicio-claude-implementador.prompt.md`.

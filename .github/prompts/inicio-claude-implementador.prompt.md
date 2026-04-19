@@ -16,6 +16,7 @@ Reglas fijas:
 - Implementa solo ese slice.
 - Valida lo que toques.
 - Actualiza `COORDINACION_IA.md` con handoff completo.
+- No actualices `TRAZABILIDAD/`; esa parte la hace Codex despues de revisar.
 - Luego detenete para revision de Codex.
 
 Comenza ahora con la subfase pendiente indicada en `COORDINACION_IA.md`.

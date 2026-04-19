@@ -59,7 +59,7 @@ Implementar SECCAP de manera incremental, respetando la arquitectura ya definida
 - Si hay cambios ajenos en archivos fuera de tu alcance, no los toques.
 - Si hay cambios ajenos en el mismo archivo que necesitas editar, no los pises: adapta tu trabajo o deja bloqueo explicito.
 - Al final de cada turno, actualiza `COORDINACION_IA.md` con objetivo, archivos leidos, archivos modificados, decisiones, pendientes y siguiente paso.
-- Si corresponde a una fase formal, actualiza tambien `TRAZABILIDAD/fase-X-*.md`.
+- No actualices `TRAZABILIDAD/fase-X-*.md`; esa trazabilidad formal la actualiza Codex despues de revisar y aprobar o bloquear la subfase.
 - No avances a una segunda subfase grande sin dejar primero el resultado listo para revision de Codex.
 
 ## Forma de ejecutar cada turno
@@ -351,6 +351,7 @@ Al finalizar cada turno debes entregar:
 6. pendientes concretos
 7. siguiente subfase recomendada
 8. puntos que Codex deberia revisar con foco tecnico
+9. resumen breve usable para `TRAZABILIDAD/fase-X-*.md`
 
 ## Si aparece un bloqueo
 Si se bloquea una fase por dependencia externa:

@@ -1,0 +1,157 @@
+// Schema Prisma — SECCAP BD Local
+// Basado en UML/10_er_bd_local.puml
+// La BD local NO almacena datos maestros de personal.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ── sys_usuario ──
+
+model SysUsuario {
+  id               Int       @id @default(autoincrement())
+  username         String    @unique @db.VarChar(50)
+  passwordHash     String    @map("password_hash") @db.VarChar(255)
+  nombreCompleto   String    @map("nombre_completo") @db.VarChar(150)
+  email            String    @db.VarChar(150)
+  activo           Boolean   @default(true)
+  intentosFallidos Int       @default(0) @map("intentos_fallidos") @db.SmallInt
+  bloqueadoHasta   DateTime? @map("bloqueado_hasta")
+  creadoEn         DateTime  @default(now()) @map("creado_en")
+  actualizadoEn    DateTime  @updatedAt @map("actualizado_en")
+
+  roles     SysUsuarioRol[]
+  sesiones  SysSesion[]
+  auditoria AuditLog[]
+
+  @@map("sys_usuario")
+}
+
+// ── sys_rol ──
+
+model SysRol {
+  id          Int      @id @default(autoincrement())
+  nombre      String   @unique @db.VarChar(50)
+  descripcion String   @db.VarChar(255)
+  activo      Boolean  @default(true)
+  creadoEn    DateTime @default(now()) @map("creado_en")
+
+  usuarios SysUsuarioRol[]
+  permisos SysRolPermiso[]
+
+  @@map("sys_rol")
+}
+
+// ── sys_permiso ──
+
+model SysPermiso {
+  id          Int    @id @default(autoincrement())
+  codigo      String @unique @db.VarChar(80)
+  modulo      String @db.VarChar(50)
+  descripcion String @db.VarChar(255)
+
+  roles SysRolPermiso[]
+
+  @@map("sys_permiso")
+}
+
+// ── sys_usuario_rol (N:N) ──
+
+model SysUsuarioRol {
+  idUsuario   Int      @map("id_usuario")
+  idRol       Int      @map("id_rol")
+  asignadoEn  DateTime @default(now()) @map("asignado_en")
+  asignadoPor Int?     @map("asignado_por")
+
+  usuario SysUsuario @relation(fields: [idUsuario], references: [id])
+  rol     SysRol     @relation(fields: [idRol], references: [id])
+
+  @@id([idUsuario, idRol])
+  @@map("sys_usuario_rol")
+}
+
+// ── sys_rol_permiso (N:N) ──
+
+model SysRolPermiso {
+  idRol     Int @map("id_rol")
+  idPermiso Int @map("id_permiso")
+
+  rol     SysRol     @relation(fields: [idRol], references: [id])
+  permiso SysPermiso @relation(fields: [idPermiso], references: [id])
+
+  @@id([idRol, idPermiso])
+  @@map("sys_rol_permiso")
+}
+
+// ── sys_sesion ──
+
+model SysSesion {
+  id         Int       @id @default(autoincrement())
+  idUsuario  Int       @map("id_usuario")
+  tokenHash  String    @map("token_hash") @db.VarChar(255)
+  ipOrigen   String    @map("ip_origen") @db.VarChar(45)
+  userAgent  String    @map("user_agent") @db.VarChar(255)
+  creadaEn   DateTime  @default(now()) @map("creada_en")
+  expiraEn   DateTime  @map("expira_en")
+  activa     Boolean   @default(true)
+  revocadaEn DateTime? @map("revocada_en")
+
+  usuario SysUsuario @relation(fields: [idUsuario], references: [id])
+
+  @@map("sys_sesion")
+}
+
+// ── audit_log ──
+// TABLA INMUTABLE: solo INSERT. No se permiten UPDATE ni DELETE.
+
+model AuditLog {
+  id                BigInt   @id @default(autoincrement())
+  idUsuario         Int      @map("id_usuario")
+  timestampUtc      DateTime @default(now()) @map("timestamp_utc")
+  accion            String   @db.VarChar(50)
+  endpoint          String   @db.VarChar(200)
+  metodoHttp        String   @map("metodo_http") @db.VarChar(10)
+  filtrosAplicados  Json?    @map("filtros_aplicados") @db.JsonB
+  statusCode        Int      @map("status_code") @db.SmallInt
+  resultado         String   @db.VarChar(20)
+  cantidadRegistros Int      @map("cantidad_registros")
+  ipOrigen          String   @map("ip_origen") @db.VarChar(45)
+  userAgent         String   @map("user_agent") @db.VarChar(255)
+  duracionMs        Int?     @map("duracion_ms")
+
+  usuario SysUsuario @relation(fields: [idUsuario], references: [id])
+
+  @@map("audit_log")
+}
+
+// ── sys_configuracion ──
+
+model SysConfiguracion {
+  clave               String    @id @db.VarChar(100)
+  valor               String    @db.Text
+  tipo                String    @db.VarChar(20)
+  descripcion         String    @db.VarChar(255)
+  modificableRuntime  Boolean   @default(false) @map("modificable_en_runtime")
+  actualizadoEn       DateTime? @updatedAt @map("actualizado_en")
+
+  @@map("sys_configuracion")
+}
+
+// ── cache_catalogo ──
+
+model CacheCatalogo {
+  id             Int      @id @default(autoincrement())
+  tipoCatalogo   String   @unique @map("tipo_catalogo") @db.VarChar(80)
+  contenidoJson  Json     @map("contenido_json") @db.JsonB
+  origen         String   @db.VarChar(50)
+  cargadoEn      DateTime @default(now()) @map("cargado_en")
+  ttlSegundos    Int      @map("ttl_segundos")
+  vigente        Boolean  @default(true)
+
+  @@map("cache_catalogo")
+}

@@ -6,6 +6,8 @@ import { healthRouter } from './routes/health.js';
 import { authRouter } from './routes/auth.js';
 import { catalogosRouter } from './routes/catalogos.js';
 import { consultaRouter } from './routes/consulta.js';
+import { detalleRouter } from './routes/detalle.js';
+import { auditoriaRouter } from './routes/auditoria.js';
 import { authenticate } from './middleware/authenticate.js';
 import { authorize } from './middleware/authorize.js';
 
@@ -21,3 +23,5 @@ app.use('/health', healthRouter);
 app.use('/auth', authRouter);
 app.use('/formacion/catalogos', authenticate, authorize('catalogos:leer'), catalogosRouter);
 app.use('/formacion/consulta', authenticate, authorize('consulta:leer'), consultaRouter);
+app.use('/formacion', authenticate, detalleRouter);
+app.use('/auditoria', authenticate, authorize('auditoria:leer'), auditoriaRouter);

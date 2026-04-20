@@ -23,13 +23,16 @@ Si queres saber el estado real sin leer todo el repositorio:
 3. Solo dar nueva orden a Claude si la ultima revision de Codex aprobo la subfase anterior.
 
 ## Punto de inicio actual
-- Estado actual: Correccion de Fase 3.3 revisada y aprobada por Codex. Fase 3.3 queda cerrada y habilitada para continuar.
+- Estado actual: Correccion de Fase 3.4 revisada y aprobada por Codex. Fase 3.4 queda cerrada y el backend de Fase 3 queda habilitado para continuar.
 - Proximo agente que debe trabajar: Claude (implementacion)
-- Proxima subfase a ejecutar: `Fase 3.4` o siguiente subfase segun cronograma
+- Proxima subfase a ejecutar: `Fase 4.1 - Shell frontend y autenticacion`
 - Resumen del estado aprobado:
-  - la validacion numerica de `page` y `page_size` ya rechaza `0` con `400`
-  - existen tests explicitos para `page=0` y `page_size=0`
+  - `GET /formacion/:id` operativo con poda por permisos
+  - `GET /formacion/:id/certificado` operativo con RBAC correcto y auditoria del `403` denegado
+  - `GET /auditoria` operativo sobre BD local con filtros y paginacion
   - `lint`, `type-check`, `test`, `prisma validate` y prueba funcional real quedaron verificados por Codex
+- Observaciones no bloqueantes:
+  - quedaron archivos temporales sin seguimiento en la raiz (`login.json`, `login-auditor.json`, `login-admin.json`) que no forman parte del entregable y conviene limpiar antes del proximo commit
 - Prompt que debe seguir Claude:
   - `.github/prompts/ejecucion-fase-a-fase-claude-opus-4-6.prompt.md`
 - Regla de parada:
@@ -1434,5 +1437,156 @@ px prisma validate en SECCAP/backend -> OK
   - Codex valido la correccion del filtro numerico en consulta principal, confirmo 39/39 tests y verifico en ejecucion real que `page=0` y `page_size=0` ahora responden 400 sin regresiones.
 - Proxima subfase autorizada:
   - `Fase 3.4` o siguiente subfase segun cronograma
+- Proximo agente que debe trabajar:
+  - Claude (implementacion)
+
+### Entrada 030 - Codex - preparacion operativa de Fase 3.4
+- Fecha y hora: 20/04/2026
+- Objetivo: dejar explicitado el alcance real de la siguiente subfase para que Claude no avance con ambiguedad.
+- Archivos leidos:
+  - `.github/prompts/ejecucion-fase-a-fase-claude-opus-4-6.prompt.md`
+  - `.github/prompts/fase-3-backend.prompt.md`
+  - `SECCAP/backend/prisma/seed.ts`
+  - `SECCAP/mock-api/src/routes/formaciones.ts`
+  - `DOCUMENTOS/09_requisitos.md`
+  - `Contexto.md`
+  - `UML/01_casos_uso_general.puml`
+- Decision operativa:
+  - la siguiente subfase queda definida como `Fase 3.4 - Detalle, certificado y auditoria consultable`
+  - alcance minimo esperado:
+    - `GET /formacion/:id`
+    - `GET /formacion/:id/certificado`
+    - `GET /auditoria`
+  - reglas base confirmadas:
+    - el mock externo ya expone `GET /externa/v1/formaciones/:id` y `GET /externa/v1/formaciones/:id/certificado`
+    - el permiso `consulta:certificado` ya existe en seed
+    - el permiso `auditoria:leer` ya existe en seed
+    - `GET /auditoria` debe quedar restringido a usuarios con `auditoria:leer`
+- Proxima subfase autorizada:
+  - `Fase 3.4 - Detalle, certificado y auditoria consultable`
+- Proximo agente que debe trabajar:
+  - Claude (implementacion)
+
+### Entrada 031 - Codex - revision de Fase 3.4
+- Fecha y hora: 20/04/2026
+- Objetivo: revisar los cambios presentes en el working tree para `GET /formacion/:id`, `GET /formacion/:id/certificado` y `GET /auditoria`, y decidir si Fase 3.4 puede aprobarse.
+- Aclaracion operativa:
+  - no existe una entrada previa de Claude cerrando Fase 3.4 en esta bitacora; la revision se realiza igual a pedido del usuario sobre el codigo presente en el arbol de trabajo.
+- Archivos leidos:
+  - `COORDINACION_IA.md`
+  - `SECCAP/backend/src/app.ts`
+  - `SECCAP/backend/src/routes/detalle.ts`
+  - `SECCAP/backend/src/routes/auditoria.ts`
+  - `SECCAP/backend/src/services/external-api.ts`
+  - `SECCAP/backend/src/services/auditoria.ts`
+  - `SECCAP/backend/src/middleware/authorize.ts`
+  - `SECCAP/backend/src/__tests__/detalle.test.ts`
+  - `SECCAP/backend/src/__tests__/auditoria.test.ts`
+- Validaciones ejecutadas:
+  - `npm run lint` en `SECCAP/backend` -> OK
+  - `npm run type-check` en `SECCAP/backend` -> FAIL
+  - `npm test` en `SECCAP/backend` -> OK, 70/70 tests
+  - `npx prisma validate` en `SECCAP/backend` -> OK
+  - prueba real con `supertest`: `GET /formacion/1/certificado` como `auditor` devuelve `403`, pero no genera registro de auditoria `statusCode=403`
+- Hallazgos bloqueantes:
+  - `SECCAP/backend/src/routes/detalle.ts` no compila con TypeScript estricto: `req.params.id` queda tipado como `string | string[]` y se pasa sin normalizar a `ID_REGEX.test(...)` en los dos handlers de detalle y certificado. Mientras `npm run type-check` falle, la subfase no cumple el baseline de calidad.
+  - el intento denegado de `GET /formacion/:id/certificado` no queda auditado, aunque esta subfase exigia registrar intentos fallidos o denegados relevantes. El `403` se produce en `SECCAP/backend/src/middleware/authorize.ts` antes de entrar al handler de `SECCAP/backend/src/routes/detalle.ts`, por lo que nunca se llama a `registrarAuditoria(...)`.
+- Hallazgos no bloqueantes:
+  - `SECCAP/backend/src/__tests__/detalle.test.ts` valida el `403` por falta de `consulta:certificado`, pero no verifica que dicho rechazo quede auditado.
+  - no hay handoff formal de Claude en esta bitacora para cerrar la subfase y dejar trazabilidad operativa minima de lo implementado.
+- Resultado de la revision:
+  - no se autoriza avanzar a otra subfase;
+  - Claude debe corregir Fase 3.4 antes de continuar.
+- Proxima subfase autorizada:
+  - `Correccion de Fase 3.4 - Detalle, certificado y auditoria consultable`
+- Proximo agente que debe trabajar:
+  - Claude (correccion)
+
+### Entrada 032 - Claude - Correccion de Fase 3.4
+- Fecha y hora: 20/04/2026
+- Objetivo: corregir los dos bloqueantes detectados por Codex en Entrada 031 para la Fase 3.4.
+- Archivos leidos:
+  - `COORDINACION_IA.md` (completo, punto de inicio actual + entradas 030 y 031)
+  - `SECCAP/backend/src/routes/detalle.ts` (completo)
+  - `SECCAP/backend/src/app.ts` (completo)
+  - `SECCAP/backend/src/middleware/authorize.ts` (completo)
+  - `SECCAP/backend/src/__tests__/detalle.test.ts` (completo)
+  - `SECCAP/backend/src/routes/auth.ts` (grep para confirmar campos de login)
+  - `SECCAP/backend/package.json` (confirmar scripts y dependencias)
+  - `SECCAP/backend/tsconfig.json` (confirmar configuracion TypeScript)
+- Archivos modificados:
+  - `SECCAP/backend/src/routes/detalle.ts`:
+    - **Fix 1 (tipado)**: agregado `const id = req.params.id as string;` al inicio de ambos handlers (`GET /:id` y `GET /:id/certificado`). Todas las referencias a `req.params.id` reemplazadas por `id`. Esto resuelve el error TS2345 porque Express 5 tipa `req.params` como `Record<string, string | string[]>`.
+    - **Fix 2 (auditoria 403)**: eliminado `authorize('consulta:certificado')` de la definicion de ruta `/:id/certificado`. Agregada verificacion inline de permiso dentro del handler: si `!user.permisos.includes('consulta:certificado')`, se llama a `registrarAuditoria()` con `resultado: 'denegado'` y `statusCode: 403` antes de responder. Comentarios explican la decision de diseno. La ruta `/:id` sigue usando `authorize('consulta:leer')` como middleware sin cambios.
+  - `SECCAP/backend/src/__tests__/detalle.test.ts`:
+    - agregado test `'registra auditoria del 403 denegado de certificado'`: verifica que `prisma.auditLog.count({where: {accion:'consulta:certificado', statusCode:403, resultado:'denegado'}})` aumenta despues de enviar `GET /formacion/1/certificado` con token de auditor.
+    - total de tests en detalle: 17 (antes 16).
+  - `COORDINACION_IA.md`: esta entrada + actualizacion de "Punto de inicio actual".
+- Decisiones de diseno:
+  - se eligio la solucion mas sobria: mover solo la verificacion de `consulta:certificado` al handler para habilitar la auditoria. No se modifico el middleware `authorize.ts` porque el patron general (middleware corta el flujo antes del handler) es correcto para endpoints donde no se necesita auditar el 403. Solo `certificado` requieria auditar intentos denegados.
+  - el `authenticate` middleware sigue aplicandose a nivel de `app.use('/formacion', authenticate, detalleRouter)` en `app.ts`, por lo que peticiones sin JWT siguen recibiendo 401 antes de llegar al handler.
+  - la respuesta del 403 inline mantiene el mismo formato que `authorize.ts` (`error: 'Permiso insuficiente'`, `detalle: 'Se requiere uno de: consulta:certificado'`) para consistencia.
+- Validaciones ejecutadas:
+  - `npm run lint` en `SECCAP/backend` -> OK, sin errores
+  - `npm run type-check` en `SECCAP/backend` -> OK (antes fallaba con TS2345)
+  - `npm test` en `SECCAP/backend` -> OK, 71/71 tests (auth 10 + catalogos 12 + consulta 17 + detalle 17 + auditoria 15)
+  - `npx prisma validate` en `SECCAP/backend` -> OK
+  - prueba funcional real contra servidor en puerto 3001 (PID 26236) + mock-api en puerto 3002:
+    - `GET /health` -> 200, `{"status":"ok"}`
+    - login como consultor (`username:consultor, password:consultor123`) -> token JWT obtenido
+    - `GET /formacion/1` como consultor -> 200, datos mapeados (tipoFormacion, dni, legajo, etc.)
+    - `GET /formacion/1/certificado` como consultor -> 200 (binario PDF)
+    - login como auditor (`username:auditor, password:auditor123`) -> token JWT obtenido
+    - `GET /formacion/1/certificado` como auditor -> 403, `{"error":"Permiso insuficiente","detalle":"Se requiere uno de: consulta:certificado"}`
+    - `GET /auditoria?accion=consulta:certificado&resultado=denegado&page_size=5` como admin -> 200, items con `statusCode:403, resultado:'denegado', usuario:'auditor'` confirmando que el intento denegado quedo auditado
+- Resultado:
+  - ambos bloqueantes de Entrada 031 corregidos
+  - `type-check` pasa limpio
+  - intentos denegados de certificado quedan auditados
+  - test nuevo cubre el caso de 403 con verificacion de auditoria
+  - 71/71 tests pasan sin regresiones
+  - prueba funcional real confirma el comportamiento correcto en los tres escenarios (consultor OK, auditor denegado+auditado, admin puede consultar auditoria)
+- Resumen para trazabilidad:
+  - Correccion de Fase 3.4 completada: tipado de `req.params.id` resuelto con cast explicito, auditoria de 403 en certificado resuelta con verificacion inline en handler, test nuevo agregado, validacion estatica y dinamica OK, prueba funcional real OK. Se cierra el bloqueo de la Entrada 031.
+- Proxima subfase sugerida (tras aprobacion de Codex):
+  - `Fase 3.5` o siguiente subfase segun cronograma
+- Proximo agente que debe trabajar:
+  - Codex (revision)
+
+### Entrada 033 - Codex - aprobacion de correccion de Fase 3.4
+- Fecha y hora: 20/04/2026
+- Objetivo: validar si la correccion de Claude cierra los dos bloqueos de Fase 3.4 y decidir si la subfase puede aprobarse.
+- Archivos leidos:
+  - `COORDINACION_IA.md`
+  - `SECCAP/backend/src/app.ts`
+  - `SECCAP/backend/src/routes/detalle.ts`
+  - `SECCAP/backend/src/routes/auditoria.ts`
+  - `SECCAP/backend/src/services/external-api.ts`
+  - `SECCAP/backend/src/__tests__/detalle.test.ts`
+- Validaciones ejecutadas:
+  - `npm run lint` en `SECCAP/backend` -> OK
+  - `npm run type-check` en `SECCAP/backend` -> OK
+  - `npm test` en `SECCAP/backend` -> OK, 71/71 tests
+  - `npx prisma validate` en `SECCAP/backend` -> OK
+  - prueba funcional real con `supertest` contra `app`:
+    - `GET /formacion/1` como `consultor` -> 200, con `dni` y `legajo`
+    - `GET /formacion/1/certificado` como `consultor` -> 200, PDF con `content-disposition`
+    - `GET /formacion/1/certificado` como `auditor` -> 403
+    - `GET /auditoria?accion=consulta:certificado&resultado=denegado&page_size=5` como `admin` -> 200 y devuelve el rechazo anterior con `statusCode=403`
+- Verificaciones tecnicas:
+  - `SECCAP/backend/src/routes/detalle.ts` ya normaliza `id` antes de validarlo, por lo que el `type-check` vuelve a pasar
+  - el `403` denegado de certificado ahora queda auditado con `accion: consulta:certificado`, `resultado: denegado` y `statusCode: 403`
+  - `SECCAP/backend/src/__tests__/detalle.test.ts` agrega cobertura explicita para ese caso
+- Hallazgos no bloqueantes:
+  - quedaron archivos temporales sin seguimiento en la raiz (`login.json`, `login-auditor.json`, `login-admin.json`) que no corresponden al entregable
+- Resultado de la revision:
+  - se aprueba la correccion de Fase 3.4
+  - Fase 3.4 queda cerrada
+  - la Fase 3 del backend queda operativamente cerrada
+  - se autoriza avanzar a `Fase 4.1 - Shell frontend y autenticacion`
+- Resumen para trazabilidad:
+  - Codex valido la correccion de tipado en detalle, confirmo la auditoria del `403` denegado en certificado y verifico `71/71` tests junto con prueba funcional real sin regresiones.
+- Proxima subfase autorizada:
+  - `Fase 4.1 - Shell frontend y autenticacion`
 - Proximo agente que debe trabajar:
   - Claude (implementacion)

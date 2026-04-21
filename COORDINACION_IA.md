@@ -23,16 +23,19 @@ Si queres saber el estado real sin leer todo el repositorio:
 3. Solo dar nueva orden a Claude si la ultima revision de Codex aprobo la subfase anterior.
 
 ## Punto de inicio actual
-- Estado actual: Correccion de Fase 3.4 revisada y aprobada por Codex. Fase 3.4 queda cerrada y el backend de Fase 3 queda habilitado para continuar.
+- Estado actual: Fase 4.1 revisada y aprobada por Codex. El shell frontend y la autenticacion base quedan cerrados y habilitados para continuar.
 - Proximo agente que debe trabajar: Claude (implementacion)
-- Proxima subfase a ejecutar: `Fase 4.1 - Shell frontend y autenticacion`
+- Proxima subfase a ejecutar: `Fase 4.2 - Filtros jerarquicos y carga de catalogos`
 - Resumen del estado aprobado:
-  - `GET /formacion/:id` operativo con poda por permisos
-  - `GET /formacion/:id/certificado` operativo con RBAC correcto y auditoria del `403` denegado
-  - `GET /auditoria` operativo sobre BD local con filtros y paginacion
-  - `lint`, `type-check`, `test`, `prisma validate` y prueba funcional real quedaron verificados por Codex
+  - frontend con router operativo y rutas minimas: `/login`, `/app`, `*`
+  - autenticacion real integrada con `POST /auth/login`, `POST /auth/logout` y `GET /auth/me`
+  - sesion restaurable con token persistido y validacion de `/auth/me` al iniciar
+  - shell autenticado base con header, navegacion minima, usuario visible y logout operativo
+  - fallback 404 y estados controlados de validacion de sesion
+  - `npm run lint`, `npm run type-check`, `npm run build` y prueba funcional real en navegador quedaron verificados por Codex
 - Observaciones no bloqueantes:
-  - quedaron archivos temporales sin seguimiento en la raiz (`login.json`, `login-auditor.json`, `login-admin.json`) que no forman parte del entregable y conviene limpiar antes del proximo commit
+  - el fallback del cliente HTTP usa `/api` en desarrollo cuando no existe `VITE_BACKEND_URL`, para aprovechar el proxy de Vite y evitar problemas de CORS por `localhost` vs `127.0.0.1`
+  - el estado `error` definido en auth no se activa hoy en el flujo implementado; no bloquea la fase, pero conviene mantener coherencia cuando evolucione el manejo de sesion
 - Prompt que debe seguir Claude:
   - `.github/prompts/ejecucion-fase-a-fase-claude-opus-4-6.prompt.md`
 - Regla de parada:
@@ -1588,5 +1591,139 @@ px prisma validate en SECCAP/backend -> OK
   - Codex valido la correccion de tipado en detalle, confirmo la auditoria del `403` denegado en certificado y verifico `71/71` tests junto con prueba funcional real sin regresiones.
 - Proxima subfase autorizada:
   - `Fase 4.1 - Shell frontend y autenticacion`
+- Proximo agente que debe trabajar:
+  - Claude (implementacion)
+
+### Entrada 034 - Claude - Fase 4.1 - Shell frontend y autenticacion
+- Fecha y hora: 20/04/2026 16:48
+- Objetivo: implementar el shell inicial del frontend SECCAP con autenticacion operativa, rutas protegidas, manejo de sesion y base de navegacion limpia sin avanzar a Fase 4.2/4.3.
+- Archivos leidos:
+  - `COORDINACION_IA.md` (completo, con foco en Punto de inicio actual y Entrada 033)
+  - `SECCAP/frontend/package.json`
+  - `SECCAP/frontend/src/main.tsx`
+  - `SECCAP/frontend/src/App.tsx`
+  - `SECCAP/frontend/src/index.css`
+  - `SECCAP/frontend/vite.config.ts`
+  - `SECCAP/frontend/eslint.config.mjs`
+  - `SECCAP/frontend/vite-env.d.ts`
+  - `SECCAP/.env.example`
+  - `SECCAP/backend/src/routes/auth.ts`
+- Archivos modificados:
+  - `SECCAP/frontend/src/main.tsx`
+  - `SECCAP/frontend/src/App.tsx`
+  - `SECCAP/frontend/src/index.css`
+  - `SECCAP/frontend/vite-env.d.ts`
+  - `SECCAP/frontend/src/api/http.ts`
+  - `SECCAP/frontend/src/auth/AuthContext.tsx`
+  - `SECCAP/frontend/src/auth/auth-context.ts`
+  - `SECCAP/frontend/src/auth/auth-storage.ts`
+  - `SECCAP/frontend/src/auth/useAuth.ts`
+  - `SECCAP/frontend/src/components/ProtectedRoute.tsx`
+  - `SECCAP/frontend/src/components/SessionStatus.tsx`
+  - `SECCAP/frontend/src/layout/AppShell.tsx`
+  - `SECCAP/frontend/src/pages/LoginPage.tsx`
+  - `SECCAP/frontend/src/pages/AppHomePage.tsx`
+  - `SECCAP/frontend/src/pages/NotFoundPage.tsx`
+  - `SECCAP/frontend/src/router/AppRouter.tsx`
+  - `SECCAP/frontend/src/types/auth.ts`
+  - `COORDINACION_IA.md`
+- Rutas frontend implementadas:
+  - `/login` -> pantalla de autenticacion real contra backend
+  - `/app` -> ruta protegida con shell autenticado y pagina inicial de fase 4.1
+  - `*` -> fallback 404 simple
+  - `/` -> redireccion segun estado de sesion (`/app` o `/login`)
+- Estructura creada:
+  - `src/api/` -> cliente HTTP Axios y normalizacion de errores
+  - `src/auth/` -> contexto de autenticacion, storage del token, hook `useAuth`
+  - `src/components/` -> `ProtectedRoute` y `SessionStatus`
+  - `src/layout/` -> `AppShell` autenticado
+  - `src/pages/` -> `LoginPage`, `AppHomePage`, `NotFoundPage`
+  - `src/router/` -> `AppRouter`
+  - `src/types/` -> tipos de auth y sesion
+- Decisiones tecnicas:
+  - se uso `BrowserRouter` con rutas minimas y una sola ruta protegida real (`/app`) para no adelantar pantallas de consulta ni resultados;
+  - el cliente HTTP toma `VITE_BACKEND_URL` si existe; si no, usa `/api` en desarrollo y `http://localhost:3001` fuera de desarrollo. Esto aprovecha el proxy de Vite y evita fallas de CORS cuando el frontend se sirve en `127.0.0.1`;
+  - la sesion se persiste solo con el token en `localStorage`; al iniciar, el frontend llama a `GET /auth/me` para validar el token y reconstruir el estado autenticado;
+  - si `/auth/me` falla, la sesion local se limpia, el usuario es redirigido a `/login` y se muestra un aviso controlado. No se exponen errores crudos de Axios;
+  - el logout llama a `POST /auth/logout`, pero aun si el backend no responde se limpia la sesion local para priorizar un cierre consistente del lado cliente;
+  - no se agregaron librerias nuevas al proyecto. La validacion funcional E2E se hizo con `@playwright/test` instalado en una carpeta temporal fuera del repo.
+- Comandos ejecutados:
+  - `npm run lint` en `SECCAP/frontend` -> OK
+  - `npm run type-check` en `SECCAP/frontend` -> OK
+  - `npm run build` en `SECCAP/frontend` -> OK
+  - `curl.exe -s http://localhost:3001/health` -> OK, backend disponible
+  - `npm run dev -- --host 127.0.0.1` en `SECCAP/frontend` -> OK, Vite en `http://127.0.0.1:5173/`
+  - runner temporal en `%TEMP%\seccap-playwright-runner`:
+    - `npm init -y` -> OK
+    - `npm install @playwright/test --no-save` -> OK
+    - `npx playwright install chromium` -> OK
+    - `npx playwright test fase41.spec.js --reporter=line` -> OK, `1 passed`
+- Resultados reales:
+  - acceso a `/app` sin token -> redirige a `/login`
+  - login real como `consultor / consultor123` -> navega a `/app` y muestra `Consultor de Prueba`
+  - recarga de la pagina autenticada -> conserva sesion y permanece en `/app`
+  - logout -> llama a backend, limpia sesion local y vuelve a `/login`
+  - token invalido persistido manualmente -> `GET /auth/me` falla, se limpia la sesion, redirige a `/login` y muestra aviso `La sesión venció o no pudo validarse. Iniciá sesión nuevamente.`
+- Resultado:
+  - Fase 4.1 implementada y validada
+  - login real operativo contra backend
+  - sesion restaurable
+  - rutas protegidas funcionando
+  - logout operativo
+  - fallback basico operativo
+  - `lint`, `type-check` y `build` en verde
+- Resumen para trazabilidad:
+  - Se implemento el shell inicial del frontend con autenticacion real, persistencia y restauracion de sesion, rutas protegidas y layout base. La entrega queda acotada a Fase 4.1 y no incluye filtros jerarquicos, grillas ni detalle de resultados. Validacion estatica completa y prueba funcional real en navegador OK.
+- Proxima subfase sugerida (solo tras revision de Codex):
+  - `Fase 4.2 - Consulta frontend basica` o la siguiente que defina el cronograma
+- Proximo agente que debe trabajar:
+  - Codex (revision)
+
+### Entrada 035 - Codex - aprobacion de Fase 4.1
+- Fecha y hora: 20/04/2026
+- Objetivo: validar si la entrega de Claude para Fase 4.1 cumple el baseline tecnico y funcional del frontend antes de autorizar Fase 4.2.
+- Archivos leidos:
+  - `COORDINACION_IA.md`
+  - `SECCAP/frontend/package.json`
+  - `SECCAP/frontend/vite.config.ts`
+  - `SECCAP/frontend/src/main.tsx`
+  - `SECCAP/frontend/src/App.tsx`
+  - `SECCAP/frontend/src/index.css`
+  - `SECCAP/frontend/src/api/http.ts`
+  - `SECCAP/frontend/src/auth/AuthContext.tsx`
+  - `SECCAP/frontend/src/auth/auth-context.ts`
+  - `SECCAP/frontend/src/auth/auth-storage.ts`
+  - `SECCAP/frontend/src/auth/useAuth.ts`
+  - `SECCAP/frontend/src/components/ProtectedRoute.tsx`
+  - `SECCAP/frontend/src/components/SessionStatus.tsx`
+  - `SECCAP/frontend/src/layout/AppShell.tsx`
+  - `SECCAP/frontend/src/pages/LoginPage.tsx`
+  - `SECCAP/frontend/src/pages/AppHomePage.tsx`
+  - `SECCAP/frontend/src/pages\NotFoundPage.tsx`
+  - `SECCAP/frontend/src/router/AppRouter.tsx`
+  - `SECCAP/frontend/src/types/auth.ts`
+- Validaciones ejecutadas:
+  - `npm run lint` en `SECCAP/frontend` -> OK
+  - `npm run type-check` en `SECCAP/frontend` -> OK
+  - `npm run build` en `SECCAP/frontend` -> OK
+  - prueba funcional real en navegador con Playwright sobre `http://127.0.0.1:5173`:
+    - acceso a `/app` sin token -> redirige a `/login`
+    - login como `consultor / consultor123` -> navega a `/app`
+    - recarga de pagina autenticada -> conserva sesion y permanece en `/app`
+    - logout -> vuelve a `/login`
+    - token invalido persistido manualmente -> limpieza de sesion y redireccion a `/login` con aviso visible
+- Verificaciones tecnicas:
+  - el router queda acotado a las rutas minimas de Fase 4.1 y no adelanta filtros ni resultados de Fase 4.2/4.3
+  - la autenticacion usa backend real y restaura sesion con `GET /auth/me`
+  - la configuracion de `axios` y el proxy de Vite son coherentes con el backend actual en desarrollo
+- Hallazgos no bloqueantes:
+  - el estado `error` definido en auth no se activa en el flujo actual; no rompe el comportamiento validado, pero conviene mantener consistencia al evolucionar el manejo de sesion
+- Resultado de la revision:
+  - se aprueba Fase 4.1
+  - se autoriza avanzar a `Fase 4.2 - Filtros jerarquicos y carga de catalogos`
+- Resumen para trazabilidad:
+  - Codex valido el shell frontend, la autenticacion real, la restauracion de sesion, las rutas protegidas, el logout y el fallback basico. La Fase 4.1 queda aprobada sin bloqueos.
+- Proxima subfase autorizada:
+  - `Fase 4.2 - Filtros jerarquicos y carga de catalogos`
 - Proximo agente que debe trabajar:
   - Claude (implementacion)

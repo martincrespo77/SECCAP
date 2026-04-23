@@ -1,4 +1,4 @@
-import { FileSearch, LogOut, ShieldCheck } from 'lucide-react';
+import { FileSearch, Home, LogOut, ShieldCheck } from 'lucide-react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/useAuth.ts';
 
@@ -55,7 +55,7 @@ export function AppShell() {
                 <ShieldCheck className="size-5 text-cyan-300" />
                 <div>
                   <p className="text-sm font-semibold">Acceso autenticado</p>
-                  <p className="text-xs text-slate-300">Base lista para fases 4.2 y 4.3</p>
+                  <p className="text-xs text-slate-300">Consulta de formación activa</p>
                 </div>
               </div>
             </div>
@@ -72,8 +72,21 @@ export function AppShell() {
                 end
                 to="/app"
               >
-                <FileSearch className="size-4" />
+                <Home className="size-4" />
                 Inicio
+              </NavLink>
+              <NavLink
+                className={({ isActive }) =>
+                  `flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition ${
+                    isActive
+                      ? 'bg-blue-900 text-white shadow-[0_16px_40px_-28px_rgba(30,64,175,0.9)]'
+                      : 'text-slate-700 hover:bg-slate-100'
+                  }`
+                }
+                to="/app/consulta"
+              >
+                <FileSearch className="size-4" />
+                Consulta
               </NavLink>
             </nav>
           </aside>

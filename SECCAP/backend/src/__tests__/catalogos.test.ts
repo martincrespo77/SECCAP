@@ -35,11 +35,13 @@ describe('Catálogos — auth y RBAC', () => {
   let tokenSinPermiso: string;
 
   beforeAll(async () => {
-    // Montar ruta temporal que exige un permiso que consultor NO tiene
+    // Montar ruta temporal en testRouter (bajo /__test, antes del 404 global)
+    // que exige un permiso que consultor NO tiene
     const { authenticate } = await import('../middleware/authenticate.js');
     const { authorize } = await import('../middleware/authorize.js');
-    app.get(
-      '/test-catalogos-rbac',
+    const { testRouter } = await import('../app.js');
+    testRouter.get(
+      '/catalogos-rbac',
       authenticate,
       authorize('admin:usuarios'),
       (_req, res) => { res.json({ ok: true }); },
@@ -64,7 +66,7 @@ describe('Catálogos — auth y RBAC', () => {
   it('devuelve 403 si el usuario no tiene el permiso requerido', async () => {
     // auditor no tiene admin:usuarios → debe recibir 403
     const res = await request(app)
-      .get('/test-catalogos-rbac')
+      .get('/__test/catalogos-rbac')
       .set('Authorization', `Bearer ${tokenSinPermiso}`);
     expect(res.status).toBe(403);
     expect(res.body.error).toBe('Permiso insuficiente');

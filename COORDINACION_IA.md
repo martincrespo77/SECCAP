@@ -23,19 +23,21 @@ Si queres saber el estado real sin leer todo el repositorio:
 3. Solo dar nueva orden a Claude si la ultima revision de Codex aprobo la subfase anterior.
 
 ## Punto de inicio actual
-- Estado actual: Fase 4.1 revisada y aprobada por Codex. El shell frontend y la autenticacion base quedan cerrados y habilitados para continuar.
+- Estado actual: Fase 5.1 revisada y aprobada por Codex. El backend queda con smoke tests, contract tests y auditoria critica en verde.
 - Proximo agente que debe trabajar: Claude (implementacion)
-- Proxima subfase a ejecutar: `Fase 4.2 - Filtros jerarquicos y carga de catalogos`
+- Proxima subfase a ejecutar: `Fase 5.2 - Harness de tests del frontend y flujos criticos`
 - Resumen del estado aprobado:
-  - frontend con router operativo y rutas minimas: `/login`, `/app`, `*`
-  - autenticacion real integrada con `POST /auth/login`, `POST /auth/logout` y `GET /auth/me`
-  - sesion restaurable con token persistido y validacion de `/auth/me` al iniciar
-  - shell autenticado base con header, navegacion minima, usuario visible y logout operativo
-  - fallback 404 y estados controlados de validacion de sesion
-  - `npm run lint`, `npm run type-check`, `npm run build` y prueba funcional real en navegador quedaron verificados por Codex
+  - `SECCAP/backend/src/app.ts` incorpora 404 JSON controlado, error handler global sin stack traces al cliente y `testRouter` montado solo con `VITEST=true`.
+  - Se agregaron suites in-process deterministicas para smoke, contratos mock/proxy y auditoria critica.
+  - Se corrigieron los tests RBAC existentes para registrar rutas temporales antes del 404 global mediante `/__test`.
+  - La suite real de integracion sigue activa y en verde con PostgreSQL y mock-api disponibles.
+  - Scripts nuevos aprobados en backend: `test:smoke`, `test:contracts` y `qa`.
+- Bloqueos actuales detectados:
+  - ninguno en la implementacion aprobada de Fase 5.1
 - Observaciones no bloqueantes:
-  - el fallback del cliente HTTP usa `/api` en desarrollo cuando no existe `VITE_BACKEND_URL`, para aprovechar el proxy de Vite y evitar problemas de CORS por `localhost` vs `127.0.0.1`
-  - el estado `error` definido en auth no se activa hoy en el flujo implementado; no bloquea la fase, pero conviene mantener coherencia cuando evolucione el manejo de sesion
+  - Los contract tests mockean `authenticate` y `fetch`; son baseline de contrato, no reemplazo de la suite real contra DB y mock-api.
+  - El seam `testRouter` es aceptable porque solo se monta en Vitest; no debe exponerse en runtime real.
+  - `qa` incluye `npm test`; como Vitest levanta todos los archivos de `src/__tests__`, tambien ejecuta smoke/contracts.
 - Prompt que debe seguir Claude:
   - `.github/prompts/ejecucion-fase-a-fase-claude-opus-4-6.prompt.md`
 - Regla de parada:
@@ -765,6 +767,62 @@ px prisma validate en SECCAP/backend -> OK
   - `Correccion de Fase 2.3 - Mock API del Area de Personal`
 - Proximo agente que debe trabajar:
   - Claude (correccion)
+
+### Entrada 037 - Claude - correccion de Fase 4.2
+- Fecha y hora: 21/04/2026 10:47
+- Objetivo: corregir los 2 hallazgos bloqueantes de contrato detectados por Codex en la Entrada 036 para cerrar Fase 4.2 sin avanzar a Fase 4.3.
+- Archivos leidos:
+  - `COORDINACION_IA.md` (completo)
+  - `SECCAP/frontend/src/types/catalogos.ts`
+  - `SECCAP/frontend/src/types/consulta.ts`
+  - `SECCAP/frontend/src/api/consulta.ts`
+  - `SECCAP/frontend/src/pages/ConsultaPage.tsx`
+  - `SECCAP/frontend/src/router/AppRouter.tsx`
+  - `SECCAP/frontend/src/layout/AppShell.tsx`
+- Archivos modificados:
+  - `SECCAP/frontend/src/types/catalogos.ts`
+  - `SECCAP/frontend/src/types/consulta.ts`
+  - `SECCAP/frontend/src/pages/ConsultaPage.tsx`
+  - `COORDINACION_IA.md`
+- Pantalla/rutas implementadas:
+  - se mantiene la pantalla de consulta en `/app/consulta` dentro del shell autenticado
+  - no se agregaron rutas nuevas en esta correccion
+- Catalogos conectados:
+  - tipos de formacion (`GET /formacion/catalogos/tipos`)
+  - categorias militares (`GET /formacion/catalogos/categorias-militares`)
+  - aptitudes por categoria (`GET /formacion/catalogos/aptitudes?categoria=...`)
+  - idiomas (`GET /formacion/catalogos/idiomas`)
+  - niveles de idioma (`GET /formacion/catalogos/niveles-idioma`)
+  - instituciones por idioma (`GET /formacion/catalogos/instituciones?idioma=...`)
+- Reglas jerarquicas implementadas:
+  - `tipo_formacion` sigue siendo filtro raiz obligatorio para habilitar busqueda
+  - en militar: `aptitud_capacitacion` solo se habilita luego de elegir `categoria_militar`
+  - en idioma: `institucion` solo se habilita luego de elegir `idioma`
+  - cambio de padre limpia filtros hijos y limpia resultado previo
+- Decisiones tecnicas:
+  - correccion de contrato 1: `TipoFormacion` ahora usa `codigo` (no `id`) y el selector raiz consume `t.codigo`
+  - correccion de contrato 2: `ConsultaResponse` ahora usa `pageSize` (no `page_size`) y la UI de resultados usa `resultado.pageSize`
+  - limpieza no bloqueante: se removio el uso de `AbortController` en `ConsultaPage` porque no estaba conectado al cliente HTTP y no cancelaba requests reales
+- Comandos ejecutados:
+  - `npm run lint` en `SECCAP/frontend`
+  - `npm run type-check` en `SECCAP/frontend`
+  - `npm run build` en `SECCAP/frontend`
+  - `Invoke-WebRequest http://localhost:3001/health` para validar backend previo a pruebas funcionales
+  - `docker ps -a` y chequeo de servicios locales de PostgreSQL para diagnostico de entorno
+- Resultados reales:
+  - `npm run lint` -> OK
+  - `npm run type-check` -> OK
+  - `npm run build` -> OK
+  - backend responde `health: degraded` por `database:error` en este entorno de ejecucion
+  - por ese estado de base de datos no se pudo completar en esta pasada la validacion funcional end-to-end de login y consulta real desde navegador
+- Resumen para trazabilidad:
+  - se corrigieron los dos bloqueos de contrato marcados por Codex (tipos con `codigo` y consulta con `pageSize`), dejando la implementacion frontend alineada al contrato backend vigente. La validacion estatica quedo en verde. La validacion funcional E2E queda bloqueada por indisponibilidad de base de datos del backend en el entorno actual.
+- Estado de cierre:
+  - Claude se detiene y deja la correccion lista para revision de Codex.
+- Proxima subfase sugerida:
+  - revision Codex de la correccion de Fase 4.2; no avanzar a Fase 4.3 hasta aprobacion
+- Proximo agente que debe trabajar:
+  - Codex (revision)
 
 ### Entrada 015 - Claude - Corrección de Fase 2.3
 - Fecha y hora: 17/04/2026
@@ -1727,3 +1785,258 @@ px prisma validate en SECCAP/backend -> OK
   - `Fase 4.2 - Filtros jerarquicos y carga de catalogos`
 - Proximo agente que debe trabajar:
   - Claude (implementacion)
+
+### Entrada 036 - Codex - revision de Fase 4.2 bloqueada
+- Fecha y hora: 21/04/2026 00:10
+- Objetivo: revisar la implementacion dejada por Claude para `Fase 4.2 - Filtros jerarquicos y carga de catalogos` y decidir si se puede aprobar o si debe volver a correccion.
+- Archivos leidos:
+  - `COORDINACION_IA.md`
+  - `TRAZABILIDAD/fase-4-frontend.md`
+  - `SECCAP/backend/src/routes/consulta.ts`
+  - `SECCAP/frontend/src/api/http.ts`
+  - `SECCAP/frontend/src/api/catalogos.ts`
+  - `SECCAP/frontend/src/api/consulta.ts`
+  - `SECCAP/frontend/src/layout/AppShell.tsx`
+  - `SECCAP/frontend/src/pages/ConsultaPage.tsx`
+  - `SECCAP/frontend/src/router/AppRouter.tsx`
+  - `SECCAP/frontend/src/types/catalogos.ts`
+  - `SECCAP/frontend/src/types/consulta.ts`
+- Archivos modificados:
+  - `COORDINACION_IA.md`
+- Validaciones ejecutadas:
+  - `git status --short` -> cambios de Fase 4.2 presentes solo en frontend
+  - `npm run lint` en `SECCAP/frontend` -> OK
+  - `npm run type-check` en `SECCAP/frontend` -> OK
+  - `npm run build` en `SECCAP/frontend` -> OK
+  - `Invoke-WebRequest http://127.0.0.1:3001/health` -> backend disponible
+  - `POST /auth/login` con `consultor / consultor123` -> OK
+  - `GET /formacion/catalogos/tipos` -> OK, respuesta real con `data[].codigo` y `data[].nombre`
+  - `GET /formacion/consulta?tipo_formacion=militar&page_size=20` -> OK, respuesta real con `page`, `pageSize`, `total`
+- Hallazgos bloqueantes:
+  - `SECCAP/frontend/src/types/catalogos.ts` y `SECCAP/frontend/src/pages/ConsultaPage.tsx` modelan el catalogo de tipos con `id`, pero el backend real devuelve `codigo`. La opcion raiz deberia construir su valor con `codigo`; asi como esta, el filtro principal no queda alineado con el contrato real.
+  - `SECCAP/frontend/src/types/consulta.ts` y `SECCAP/frontend/src/pages/ConsultaPage.tsx` consumen `page_size`, pero el backend aprobado responde `pageSize` desde `SECCAP/backend/src/routes/consulta.ts`. La vista de resultados y cualquier logica de paginacion quedan inconsistentes.
+- Hallazgos no bloqueantes:
+  - `ConsultaPage` crea `AbortController` para aptitudes e instituciones, pero esas señales no se pasan al cliente HTTP; hoy no produce cancelacion real de requests obsoletos.
+- Resultado de la revision:
+  - Fase 4.2 no se aprueba
+  - Claude debe corregir el contrato de catalogos y de respuesta de consulta antes de volver a entregar
+  - no corresponde avanzar a Fase 4.3
+- Resumen para trazabilidad:
+  - Codex valido la entrega de Fase 4.2 y encontro dos bloqueos de contrato con el backend aprobado: uso de `id` en lugar de `codigo` para tipos de formacion y consumo de `page_size` en lugar de `pageSize` en la respuesta de consulta. La subfase queda devuelta a correccion.
+- Proxima subfase autorizada:
+  - ninguna; se mantiene `Fase 4.2 - Filtros jerarquicos y carga de catalogos` en correccion
+- Proximo agente que debe trabajar:
+  - Claude (correccion)
+
+### Entrada 038 - Codex - aprobacion de correccion de Fase 4.2
+- Fecha y hora: 21/04/2026 12:33
+- Objetivo: validar si la correccion entregada por Claude cierra los dos bloqueos de contrato de Fase 4.2 y decidir si el frontend puede avanzar a Fase 4.3.
+- Archivos leidos:
+  - `COORDINACION_IA.md`
+  - `TRAZABILIDAD/fase-4-frontend.md`
+  - `SECCAP/frontend/src/types/catalogos.ts`
+  - `SECCAP/frontend/src/types/consulta.ts`
+  - `SECCAP/frontend/src/api/catalogos.ts`
+  - `SECCAP/frontend/src/api/consulta.ts`
+  - `SECCAP/frontend/src/pages/ConsultaPage.tsx`
+  - `SECCAP/frontend/src/router/AppRouter.tsx`
+  - `SECCAP/frontend/src/layout/AppShell.tsx`
+- Validaciones ejecutadas:
+  - `npm.cmd run lint` en `SECCAP/frontend` -> OK
+  - `npm.cmd run type-check` en `SECCAP/frontend` -> OK
+  - `npm.cmd run build` en `SECCAP/frontend` -> OK
+  - inspeccion de contrato sobre frontend:
+    - `TipoFormacion` usa `codigo`
+    - `ConsultaResponse` usa `pageSize`
+    - `ConsultaPage` consume `t.codigo` y `resultado.pageSize`
+  - chequeo del backend local:
+    - `GET /health` -> 503
+    - `POST /auth/login` no pudo validarse por error de Prisma / base de datos en el entorno local
+- Verificaciones tecnicas:
+  - el bloqueo `id -> codigo` queda corregido en el tipado y en el selector raiz de tipos
+  - el bloqueo `page_size -> pageSize` queda corregido en el tipado y en la UI de resultados
+  - se removio la falsa cancelacion con `AbortController`, dejando la pagina mas coherente con el cliente HTTP real
+  - no se altero la arquitectura aprobada ni se adelanto alcance de Fase 4.3
+- Hallazgos no bloqueantes:
+  - el backend local estaba degradado por fallo de base de datos, por lo que no fue posible repetir en esta revision una prueba funcional real de login + consulta desde navegador
+- Resultado de la revision:
+  - se aprueba la correccion de Fase 4.2
+  - Fase 4.2 queda cerrada
+  - se autoriza avanzar a `Fase 4.3 - Resultados, detalle y descarga`
+- Resumen para trazabilidad:
+  - Codex valido la correccion de contrato del frontend para tipos de formacion (`codigo`) y respuesta de consulta (`pageSize`). La entrega queda aprobada con validacion estatica completa (`lint`, `type-check`, `build`) y con riesgo residual acotado por degradacion temporal del backend local.
+- Proxima subfase autorizada:
+  - `Fase 4.3 - Resultados, detalle y descarga`
+- Proximo agente que debe trabajar:
+  - Claude (implementacion)
+
+---
+
+### Entrada 039 - Claude - Fase 4.3 implementada (handoff a Codex)
+- Asistente: Claude
+- Fecha y hora: 21/04/2026 16:57
+- Objetivo: Implementar `Fase 4.3 - Resultados, detalle y descarga` en frontend, cerrando el flujo visible desde la consulta hasta la descarga de certificado, sin tocar backend.
+- Archivos leidos:
+  - `COORDINACION_IA.md` (completo, con foco en `Punto de inicio actual` y entradas recientes)
+  - `SECCAP/frontend/src/pages/ConsultaPage.tsx`
+  - `SECCAP/frontend/src/api/consulta.ts`
+  - `SECCAP/frontend/src/api/http.ts`
+  - `SECCAP/frontend/src/types/consulta.ts`
+  - `SECCAP/backend/src/routes/detalle.ts`
+  - `SECCAP/backend/src/services/mapper.ts`
+- Archivos modificados:
+  - `SECCAP/frontend/src/api/consulta.ts` - agrega `getFormacionDetalle(id)` y `descargarCertificado(id)` (blob + `Content-Disposition` con soporte `filename*=UTF-8''...`, decodifica cuerpos de error JSON aun con `responseType=blob`).
+  - `SECCAP/frontend/src/pages/ConsultaPage.tsx` - paginacion real (`page` / `page_size=5`), reset a pagina 1 al buscar, handler `handleIrPagina`, accion "Ver" por fila, controles "Anterior" / "Siguiente" con indicador "Mostrando X-Y de N · Pagina P de T". Se retiro el mensaje "Fase 4.3 pendiente".
+  - `COORDINACION_IA.md` - actualizado `Punto de inicio actual` y esta entrada de handoff.
+- Archivos creados:
+  - `SECCAP/frontend/src/components/FormacionDetalleDrawer.tsx` - panel lateral sobrio con detalle on-demand, estados loading / error / not-found controlados, render por secciones (Persona / Militar / Civil / Idioma / Estado / Observaciones) sin hardcodear roles (solo muestra `dni` y `legajo` si el backend los devuelve), boton de descarga condicionado a `certificadoDescargable`, manejo de `403` y `404` con mensajes propios, descarga via `Blob` + anchor efimero con `URL.createObjectURL`.
+- Decisiones tecnicas:
+  - Detalle resuelto dentro de `/app/consulta` con drawer lateral (no se creo ruta nueva), segun preferencia del prompt.
+  - `PAGE_SIZE = 5` para que la paginacion real sea observable con el dataset actual del mock; es ajuste trivial si Codex prefiere otro valor.
+  - Se reuso `FormacionDTO` existente en `types/consulta.ts` para tipar el detalle (el backend devuelve el mismo DTO ya mapeado).
+  - Filtros dependientes siguen reseteando resultado; `resetResultado()` consolida esa logica.
+  - La descarga usa blob real; se respeta `filename` del `Content-Disposition` del backend, con fallback `certificado-<id>.pdf`.
+  - Errores de descarga: si el backend responde JSON de error con `responseType=blob`, se lee y parsea el blob para extraer `{ error, detalle }` y se re-lanza como `ApiError` con el `status` original (permite distinguir 403 / 404 / otros en la UI).
+  - No se modifico `router` ni `AppShell`: la subfase no lo requiere.
+  - No se tocaron permisos ni se inventaron campos: el `dni` / `legajo` aparecen si vienen del backend; la visibilidad del boton de descarga es solo UX basada en `certificadoDescargable` del DTO (RBAC sigue en backend).
+- Validaciones ejecutadas:
+  - `npm run lint` en `SECCAP/frontend` -> OK (sin errores; hubo una pasada intermedia con warning por `pagina` no usado que se corrigio antes del commit final).
+  - `npm run type-check` en `SECCAP/frontend` -> OK.
+  - `npm run build` en `SECCAP/frontend` -> OK. `vite build` 1668 modulos, 2.66s, `dist/assets/index-*.js` 316.31 kB (gzip 100.19 kB), `dist/assets/index-*.css` 28.27 kB.
+  - `GET http://localhost:3001/health` -> `503 { status: "degraded", checks: { database: "error" } }`.
+- Resultados reales:
+  - Implementacion completa y compilando en verde.
+  - Validacion funcional E2E (login + consulta paginada + detalle + descarga) no se pudo ejecutar: backend en estado `degraded` por `database: error` (PostgreSQL no disponible en este entorno, sin Docker activo y sin servicio `postgresql` local). Segun consigna, no se tocaron backend ni infraestructura en esta subfase.
+- Pendientes concretos:
+  - Levantar PostgreSQL local (por ejemplo `docker start seccap-pg` o arrancar el servicio equivalente) y repetir las validaciones funcionales: `consultor` con dataset paginable, cambio de pagina, apertura de detalle, descarga ok y error controlado; `auditor` con detalle sin `dni` / `legajo` y certificado 403 controlado si corresponde.
+  - Decision de Codex sobre `PAGE_SIZE=5`.
+  - Codex evalua si aprueba Fase 4.3 o solicita correccion.
+- Resumen breve (trazabilidad):
+  - Fase 4.3 deja operativo en frontend el flujo consulta -> paginacion real -> detalle on-demand via drawer -> descarga de certificado como blob con manejo controlado de 403 / 404 / not found / errores upstream, sin tocar backend ni arquitectura aprobada. lint / type-check / build en verde. Validacion funcional bloqueada por DB caida; implementacion entregada completa para revision.
+- Proximo paso sugerido:
+  - Codex revisa, valida con backend sano si puede levantarlo, y decide aprobacion o correccion de Fase 4.3. Claude se detiene aqui.
+
+### Entrada 040 - Codex - aprobacion de Fase 4.3
+- Fecha y hora: 22/04/2026 15:28
+- Objetivo: revisar la entrega de Claude para `Fase 4.3 - Resultados, detalle y descarga` y decidir si el frontend puede dar por cerrada la Fase 4.
+- Archivos leidos:
+  - `COORDINACION_IA.md`
+  - `TRAZABILIDAD/fase-4-frontend.md`
+  - `SECCAP/frontend/src/api/consulta.ts`
+  - `SECCAP/frontend/src/types/consulta.ts`
+  - `SECCAP/frontend/src/components/FormacionDetalleDrawer.tsx`
+  - `SECCAP/frontend/src/pages/ConsultaPage.tsx`
+  - `SECCAP/frontend/src/router/AppRouter.tsx`
+  - `SECCAP/frontend/src/layout/AppShell.tsx`
+- Validaciones ejecutadas:
+  - `npm.cmd run lint` en `SECCAP/frontend` -> OK
+  - `npm.cmd run type-check` en `SECCAP/frontend` -> OK
+  - `npm.cmd run build` en `SECCAP/frontend` -> OK
+  - barrido de frontend con `rg` para revisar contratos de paginacion, detalle y descarga -> OK
+  - chequeo de entorno local:
+    - `GET http://127.0.0.1:3001/health` -> sin conexion
+    - `POST http://127.0.0.1:3001/auth/login` -> sin conexion
+    - `docker ps -a` -> Docker Desktop no estaba levantado
+    - `Get-Service *postgres*` -> sin servicio PostgreSQL disponible
+- Verificaciones tecnicas:
+  - la paginacion real quedo integrada sobre `page`, `page_size`, `page`, `pageSize` y `total`
+  - el detalle on-demand se resuelve dentro de `/app/consulta` con `FormacionDetalleDrawer`, sin romper el router aprobado
+  - la descarga de certificado maneja `blob`, `Content-Disposition` y errores `403` / `404` de manera controlada
+  - la UI no hardcodea roles para `dni` y `legajo`; depende de lo que entregue el backend ya podado
+  - no se detectaron regresiones de contrato ni inconsistencias de build en la implementacion entregada
+- Hallazgos no bloqueantes:
+  - Claude duplico el identificador de entrada y reutilizo `Entrada 038`; Codex renumera esta entrega como `Entrada 039` para mantener la bitacora coherente
+  - no fue posible repetir una validacion funcional E2E porque el backend no estaba escuchando y la infraestructura local de PostgreSQL/Docker no estaba disponible en esta sesion
+- Resultado de la revision:
+  - se aprueba Fase 4.3
+  - la Fase 4 del frontend queda cerrada
+  - se autoriza avanzar a `Fase 5 - QA, contratos y endurecimiento`
+- Resumen para trazabilidad:
+  - Codex valido la implementacion de paginacion, detalle y descarga del frontend. `lint`, `type-check` y `build` pasaron en verde y no se detectaron fallas de contrato. La validacion funcional completa queda como riesgo residual del entorno local apagado, no del codigo aprobado.
+- Proxima subfase autorizada:
+  - `Fase 5 - QA, contratos y endurecimiento`
+- Proximo agente que debe trabajar:
+  - Claude (implementacion)
+
+---
+
+### Entrada 041 - Claude - Fase 5.1 (Smoke backend y contratos mock/proxy)
+
+- Fecha y hora: 2026-04-22 21:41 (UTC-3)
+- Agente: Claude
+- Subfase trabajada: Fase 5.1 - Smoke backend y contratos mock/proxy
+- Diagnostico inicial corregido: en mi primer pase asumi que PostgreSQL no estaba disponible y disene la suite sobre ese supuesto. El usuario corrigio: el contenedor seccap-pg si esta arriba y los tests de integracion reales SI corren. La nueva suite in-process se anade COMO BASELINE adicional, no como reemplazo. La suite de integracion real (auth, consulta, detalle, catalogos, auditoria) sigue intacta y verde.
+- Causa real de los 3 RBAC rojos previos: mi propio cambio. Al agregar notFoundHandler en app.ts, los tests de RBAC que registraban rutas auxiliares con app.get(...) en beforeAll quedaban detras del 404. Solucion: exporte testRouter desde app.ts montado en /__test, condicionado a process.env.VITEST==='true', ANTES del notFoundHandler. Cero contaminacion en produccion. Los tests ahora registran rutas en testRouter y consultan /__test/<path>.
+- Cambios en codigo de aplicacion (SECCAP/backend/src/app.ts):
+  - Export de testRouter: Router montado solo cuando VITEST=true en /__test.
+  - notFoundHandler: responde 404 con JSON { error: 'Recurso no encontrado' }.
+  - errorHandler: traduce JSON malformado y errores genericos a 400/500 con shape sobrio { error }, sin stack ni internals.
+- Tests nuevos (in-process, prisma + authenticate mockeados con vi.hoisted; fetch upstream mockeado por test):
+  - SECCAP/backend/src/__tests__/smoke.test.ts (7 tests): /health 200/503, no expone password/FATAL/stack, 404 JSON estable, 401 sin token y token invalido sin filtrar internals, JSON malformado responde JSON sobrio sin stack.
+  - SECCAP/backend/src/__tests__/contracts.test.ts (14 tests): lista mapeada camelCase + pageSize en lugar de page_size, poda dni/legajo sin consulta:detalle, 502 ante 500 upstream, detalle DTO mapeado, 404 traducido, 400 id no numerico, certificado preserva Content-Type/Content-Disposition, 403 sin consulta:certificado, 404 cert, catalogos { data:[{codigo,nombre}] } sin id (regresion Fase 4.2), aptitudes 400 sin categoria + reenvio con categoria_militar=CM-01, instituciones idioma, timeout AbortError -> 504.
+  - SECCAP/backend/src/__tests__/auditoria-criticos.test.ts (5 tests): consulta exitosa registra accion=consulta:formacion + statusCode 200 + cantidadRegistros + filtrosAplicados; detalle exitoso registra consulta:detalle con endpoint /formacion/<id>; certificado denegado registra resultado=denegado y NO llama upstream; /auditoria 200 con shape paginado y BigInt id como string; /auditoria 403 si falta auditoria:leer.
+- Tests existentes corregidos:
+  - SECCAP/backend/src/__tests__/auth.test.ts y catalogos.test.ts: los 3 tests RBAC ahora usan testRouter via /__test/<path>.
+- Scripts nuevos en SECCAP/backend/package.json:
+  - test:smoke -> vitest run src/__tests__/smoke.test.ts
+  - test:contracts -> vitest run src/__tests__/contracts.test.ts src/__tests__/auditoria-criticos.test.ts
+  - qa -> npm run lint && npm run type-check && npm test
+- Validaciones ejecutadas:
+  - npm run lint -> clean.
+  - npm run type-check -> clean.
+  - npm test (suite completa con DB real + mock-api en 3002) -> 8 archivos, 97 tests verdes.
+  - npm run test:smoke -> 7/7 verdes.
+  - npm run test:contracts -> 19/19 verdes (14 contracts + 5 auditoria-criticos).
+  - npm run qa -> verde end-to-end.
+- Entorno verificado durante la corrida: contenedor seccap-pg arriba, mock-api levantado en 3002, DATABASE_URL leida desde SECCAP/.env.
+- Estado para la siguiente fase: el backend tiene ahora doble red de seguridad (integracion real + smoke/contract in-process), los 4 flujos auditables criticos quedan cubiertos a nivel unitario, y la app deja de exponer detalles internos en errores controlados.
+- Me detengo para revision de Codex.
+
+### Entrada 042 - Codex - aprobacion de Fase 5.1
+- Fecha y hora: 23/04/2026 00:23
+- Objetivo: revisar la entrega de Claude para `Fase 5.1 - Smoke backend y contratos mock/proxy`, validar infraestructura local y decidir si se puede avanzar a la siguiente subfase.
+- Archivos leidos:
+  - `COORDINACION_IA.md`
+  - `TRAZABILIDAD/fase-5-qa.md`
+  - `SECCAP/backend/package.json`
+  - `SECCAP/backend/src/app.ts`
+  - `SECCAP/backend/src/routes/consulta.ts`
+  - `SECCAP/backend/src/routes/detalle.ts`
+  - `SECCAP/backend/src/routes/auditoria.ts`
+  - `SECCAP/backend/src/__tests__/auth.test.ts`
+  - `SECCAP/backend/src/__tests__/catalogos.test.ts`
+  - `SECCAP/backend/src/__tests__/smoke.test.ts`
+  - `SECCAP/backend/src/__tests__/contracts.test.ts`
+  - `SECCAP/backend/src/__tests__/auditoria-criticos.test.ts`
+- Archivos modificados por Codex:
+  - `COORDINACION_IA.md`: actualizacion del punto de inicio, renumeracion de la entrada de Claude y registro de aprobacion.
+  - `TRAZABILIDAD/fase-5-qa.md`: registro formal de la subfase.
+- Validaciones ejecutadas por Codex:
+  - `docker ps --filter name=seccap-pg` -> contenedor `seccap-pg` arriba y publicado en `5432`.
+  - `GET http://127.0.0.1:3002/externa/v1/health` -> mock-api OK.
+  - `npm.cmd run lint` en `SECCAP/backend` -> OK.
+  - `npm.cmd run type-check` en `SECCAP/backend` -> OK.
+  - `npx.cmd prisma validate` en `SECCAP/backend` -> OK.
+  - `npm.cmd test` en `SECCAP/backend` -> 8 archivos, 97 tests OK.
+  - `npm.cmd run test:smoke` -> 1 archivo, 7 tests OK.
+  - `npm.cmd run test:contracts` -> 2 archivos, 19 tests OK.
+  - `npm.cmd run qa` -> lint + type-check + test OK.
+- Verificaciones tecnicas:
+  - `testRouter` queda montado solo cuando `process.env.VITEST === 'true'`, antes del 404 global; no queda expuesto en runtime normal.
+  - `notFoundHandler` y `errorHandler` entregan JSON sobrio y evitan stack traces en cliente.
+  - Los tests RBAC existentes quedaron corregidos sin cambiar permisos ni arquitectura.
+  - Las suites nuevas cubren smoke, contrato mock/proxy y auditoria critica como red adicional.
+  - La suite de integracion real contra PostgreSQL y mock-api sigue verde.
+- Hallazgos bloqueantes:
+  - ninguno.
+- Hallazgos no bloqueantes:
+  - Los contract tests mockean `authenticate` y `fetch`; esto es correcto para contrato, pero no sustituye integracion real. La integracion real fue ejecutada y quedo verde.
+  - La entrada de Claude reutilizo `Entrada 040`; Codex la renumero como `Entrada 041`.
+- Resultado de la revision:
+  - se aprueba `Fase 5.1 - Smoke backend y contratos mock/proxy`.
+  - se autoriza avanzar a `Fase 5.2 - Harness de tests del frontend y flujos criticos`.
+- Resumen para trazabilidad:
+  - Codex valido la incorporacion de hardening basico de errores, `testRouter` exclusivo para Vitest, smoke tests, contract tests y auditoria critica. Todas las validaciones de backend quedaron en verde con PostgreSQL y mock-api disponibles.
+- Proximo agente que debe trabajar:
+  - Claude (implementacion de Fase 5.2).
+

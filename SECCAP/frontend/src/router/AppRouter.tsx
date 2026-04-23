@@ -3,6 +3,7 @@ import { ProtectedRoute } from '../components/ProtectedRoute.tsx';
 import { useAuth } from '../auth/useAuth.ts';
 import { AppShell } from '../layout/AppShell.tsx';
 import { AppHomePage } from '../pages/AppHomePage.tsx';
+import { ConsultaPage } from '../pages/ConsultaPage.tsx';
 import { LoginPage } from '../pages/LoginPage.tsx';
 import { NotFoundPage } from '../pages/NotFoundPage.tsx';
 
@@ -25,6 +26,7 @@ export function AppRouter() {
       <Route element={<ProtectedRoute />}>
         <Route element={<AppShell />} path="/app">
           <Route element={<AppHomePage />} index />
+          <Route element={<ConsultaPage />} path="consulta" />
         </Route>
       </Route>
 

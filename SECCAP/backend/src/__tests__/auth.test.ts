@@ -153,14 +153,16 @@ describe('RBAC - authorize middleware', () => {
 
   /*
    * Para testear authorize sin crear rutas extra, montamos una ruta temporal
-   * en la app. Esto verifica que el middleware authorize funciona correctamente.
+   * en el testRouter (montado bajo /__test antes del 404 global, solo cuando
+   * VITEST=true). Esto verifica que el middleware authorize funciona correctamente.
    */
   beforeAll(async () => {
     const { authenticate } = await import('../middleware/authenticate.js');
     const { authorize } = await import('../middleware/authorize.js');
+    const { testRouter } = await import('../app.js');
 
-    app.get(
-      '/test-rbac/admin-only',
+    testRouter.get(
+      '/rbac/admin-only',
       authenticate,
       authorize('admin:usuarios'),
       (_req, res) => { res.json({ ok: true }); },
@@ -169,7 +171,7 @@ describe('RBAC - authorize middleware', () => {
 
   it('admin accede a ruta protegida con permiso admin:usuarios', async () => {
     const res = await request(app)
-      .get('/test-rbac/admin-only')
+      .get('/__test/rbac/admin-only')
       .set('Authorization', `Bearer ${adminToken}`);
 
     expect(res.status).toBe(200);
@@ -178,7 +180,7 @@ describe('RBAC - authorize middleware', () => {
 
   it('auditor recibe 403 en ruta que requiere admin:usuarios', async () => {
     const res = await request(app)
-      .get('/test-rbac/admin-only')
+      .get('/__test/rbac/admin-only')
       .set('Authorization', `Bearer ${auditorToken}`);
 
     expect(res.status).toBe(403);

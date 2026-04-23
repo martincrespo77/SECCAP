@@ -12,10 +12,11 @@ import userEvent from '@testing-library/user-event';
  * se renderizan.
  */
 
-const { ejecutarConsultaMock, getAptitudesMock, getInstitucionesMock } = vi.hoisted(() => ({
+const { ejecutarConsultaMock, getAptitudesMock, getInstitucionesMock, getTiposFormacionMock } = vi.hoisted(() => ({
   ejecutarConsultaMock: vi.fn(),
   getAptitudesMock: vi.fn(),
   getInstitucionesMock: vi.fn(),
+  getTiposFormacionMock: vi.fn(),
 }));
 
 vi.mock('../api/consulta.ts', () => ({
@@ -25,11 +26,7 @@ vi.mock('../api/consulta.ts', () => ({
 }));
 
 vi.mock('../api/catalogos.ts', () => ({
-  getTiposFormacion: vi.fn().mockResolvedValue([
-    { codigo: 'militar', nombre: 'Ámbito militar' },
-    { codigo: 'idioma', nombre: 'Idioma' },
-    { codigo: 'civil', nombre: 'Ámbito civil' },
-  ]),
+  getTiposFormacion: getTiposFormacionMock,
   getCategoriasMilitares: vi.fn().mockResolvedValue([
     { codigo: 'CM-01', nombre: 'Categoría 1' },
     { codigo: 'CM-02', nombre: 'Categoría 2' },
@@ -51,6 +48,12 @@ beforeEach(() => {
   ejecutarConsultaMock.mockReset();
   getAptitudesMock.mockReset();
   getInstitucionesMock.mockReset();
+  getTiposFormacionMock.mockReset();
+  getTiposFormacionMock.mockResolvedValue([
+    { codigo: 'militar', nombre: 'Ámbito militar' },
+    { codigo: 'idioma', nombre: 'Idioma' },
+    { codigo: 'civil', nombre: 'Ámbito civil' },
+  ]);
   getAptitudesMock.mockResolvedValue([{ nombre: 'Apt-A' }, { nombre: 'Apt-B' }]);
   getInstitucionesMock.mockResolvedValue([{ nombre: 'Cultural' }]);
 });
@@ -198,5 +201,60 @@ describe('ConsultaPage — filtros jerárquicos', () => {
 
     await user.selectOptions(tipo, 'idioma');
     expect(screen.queryByText(/Pérez, Juan/)).not.toBeInTheDocument();
+  });
+});
+
+describe('ConsultaPage — casos negativos', () => {
+  it('si getTiposFormacion falla, muestra el mensaje de error del catálogo', async () => {
+    getTiposFormacionMock.mockReset();
+    getTiposFormacionMock.mockRejectedValueOnce(
+      Object.assign(new Error('Error de red al cargar tipos'), { status: 500 }),
+    );
+
+    render(<ConsultaPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Error de red al cargar tipos/i)).toBeInTheDocument();
+    });
+    expect(screen.getByRole('button', { name: /buscar/i })).toBeDisabled();
+  });
+
+  it('si ejecutarConsulta rechaza con error del backend, muestra el banner "No se pudo realizar la consulta"', async () => {
+    ejecutarConsultaMock.mockRejectedValueOnce(
+      Object.assign(new Error('Error al consultar formaciones'), { status: 502 }),
+    );
+
+    render(<ConsultaPage />);
+    const tipo = await screen.findByLabelText(/tipo de formación/i);
+    const user = userEvent.setup();
+    await user.selectOptions(tipo, 'militar');
+    await user.click(screen.getByRole('button', { name: /buscar/i }));
+
+    expect(
+      await screen.findByText(/No se pudo realizar la consulta/i),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/Error al consultar formaciones/i)).toBeInTheDocument();
+    // No se renderizan resultados sensibles cuando hay error
+    expect(screen.queryByRole('table')).not.toBeInTheDocument();
+  });
+
+  it('consulta sin resultados muestra el mensaje de vacío controlado', async () => {
+    ejecutarConsultaMock.mockResolvedValueOnce({
+      items: [],
+      page: 1,
+      pageSize: 5,
+      total: 0,
+    });
+
+    render(<ConsultaPage />);
+    const tipo = await screen.findByLabelText(/tipo de formación/i);
+    const user = userEvent.setup();
+    await user.selectOptions(tipo, 'militar');
+    await user.click(screen.getByRole('button', { name: /buscar/i }));
+
+    expect(
+      await screen.findByText(/No se encontraron registros con los filtros seleccionados/i),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('table')).not.toBeInTheDocument();
   });
 });

@@ -23,21 +23,22 @@ Si queres saber el estado real sin leer todo el repositorio:
 3. Solo dar nueva orden a Claude si la ultima revision de Codex aprobo la subfase anterior.
 
 ## Punto de inicio actual
-- Estado actual: Fase 5.2 revisada y aprobada por Codex. El frontend queda con harness Vitest + Testing Library y flujos criticos cubiertos.
-- Proximo agente que debe trabajar: Claude (implementacion)
-- Proxima subfase a ejecutar: `Fase 5.3 - Endurecimiento final de QA, casos negativos y cierre de fase`
+- Estado actual: Fase 5.3 revisada y aprobada por Codex. La Fase 5 de QA queda cerrada.
+- Proximo agente que debe trabajar: Claude (implantacion/documentacion)
+- Proxima subfase a ejecutar: `Fase 6 - Implantacion y Cierre`
 - Resumen del estado aprobado:
   - Backend Fase 5.1 aprobado: smoke tests, contract tests, auditoria critica y `qa` en verde.
   - Frontend Fase 5.2 aprobado: harness Vitest + Testing Library + jsdom operativo.
   - Tests frontend cubren autenticacion, router/rutas protegidas, shell, consulta, filtros jerarquicos, resultados/paginacion, detalle y certificado.
   - Bug de login fallido corregido: `clearLoginError` y `clearSessionNotice` quedaron estables con `useCallback`.
-  - El test de login fallido ahora exige mensaje visible `Usuario o contraseña incorrectos.` y token no persistido.
+  - Fase 5.3 aprobo casos negativos adicionales en backend/frontend, script unificado `scripts/qa-local.ps1` y documentacion tecnica `SECCAP/docs-tecnicos/qa.md`.
+  - QA unificado final paso completo: backend `101/101`, frontend `28/28`, lint/type-check/build/prisma validate en verde.
 - Bloqueos actuales detectados:
-  - ninguno en la implementacion aprobada de Fase 5.2
+  - ninguno en la implementacion aprobada de Fase 5.3
 - Observaciones no bloqueantes:
-  - Los tests frontend son in-process con APIs mockeadas; no reemplazan una futura validacion E2E real.
-  - `@vitest/ui` quedo instalado como dependencia de desarrollo opcional; no bloquea, pero solo debe usarse si aporta valor.
-  - No se toco backend durante Fase 5.2.
+  - El QA backend de integracion requiere `seccap-pg` y mock-api en `3002`; si el mock-api esta caido, el script falla correctamente.
+  - Durante la revision hubo un deadlock transitorio en una corrida backend paralela; la repeticion aislada y el QA unificado final pasaron en verde. Si se repite, conviene serializar tests de integracion backend.
+  - Los tests frontend siguen siendo in-process con APIs mockeadas; no reemplazan una futura validacion E2E real.
 - Prompt que debe seguir Claude:
   - `.github/prompts/ejecucion-fase-a-fase-claude-opus-4-6.prompt.md`
 - Regla de parada:
@@ -2083,6 +2084,49 @@ px prisma validate en SECCAP/backend -> OK
 
 TERMINADO PARA REVISION DE CODEX
 
+### Entrada 048 - Codex - aprobacion de Fase 5.3 y cierre formal de Fase 5
+- Fecha y hora: 23/04/2026 12:26
+- Objetivo: revisar la entrega de Claude para `Fase 5.3 - Endurecimiento final de QA, casos negativos y cierre de Fase 5` y decidir si la fase puede cerrarse.
+- Archivos leidos:
+  - `COORDINACION_IA.md`
+  - `SECCAP/backend/src/__tests__/auditoria.test.ts`
+  - `SECCAP/frontend/src/__tests__/consulta.test.tsx`
+  - `SECCAP/frontend/src/__tests__/detalle.test.tsx`
+  - `scripts/qa-local.ps1`
+  - `SECCAP/docs-tecnicos/qa.md`
+  - `TRAZABILIDAD/fase-5-qa.md`
+- Archivos modificados por Codex:
+  - `COORDINACION_IA.md`: actualizacion del punto de inicio y registro de aprobacion/cierre.
+  - `TRAZABILIDAD/fase-5-qa.md`: registro formal de Fase 5.3 y cierre de fase.
+- Validaciones ejecutadas por Codex:
+  - verificacion de cambios acotados a QA/documentacion -> OK.
+  - busqueda de `.skip` / `.only` en backend y frontend -> sin hallazgos.
+  - `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/qa-local.ps1`:
+    - primera corrida fallo porque el mock-api no estaba arriba.
+    - luego de levantar mock-api, una corrida backend reporto un deadlock transitorio.
+    - corrida final limpia del script unificado -> OK.
+  - corrida final confirmada:
+    - backend: `npm run lint`, `npm run type-check`, `npx prisma validate`, `npm test` -> OK (`101/101`).
+    - frontend: `npm run lint`, `npm run type-check`, `npm test`, `npm run build` -> OK (`28/28`).
+- Verificaciones tecnicas:
+  - `scripts/qa-local.ps1` falla con exit code distinto de cero si cualquier paso falla y separa backend/frontend claramente.
+  - `SECCAP/docs-tecnicos/qa.md` documenta alcance, prerrequisitos y comandos de QA sin exceso de detalle.
+  - Los casos negativos agregados en backend validan filtros invalidos de auditoria y ausencia de stack traces.
+  - Los casos negativos agregados en frontend cubren catalogo fallido, consulta con error, consulta vacia, detalle 404, descarga 500 y ausencia de placeholders sensibles.
+- Hallazgos bloqueantes:
+  - ninguno.
+- Hallazgos no bloqueantes:
+  - El QA de backend integracion depende de que mock-api este corriendo en `localhost:3002`; el script falla correctamente si no lo esta.
+  - Hubo un deadlock transitorio en una corrida backend paralela durante la revision, pero la repeticion aislada y la corrida final del QA unificado pasaron en verde.
+- Resultado de la revision:
+  - se aprueba `Fase 5.3 - Endurecimiento final de QA, casos negativos y cierre de Fase 5`.
+  - se da por cerrada la Fase 5 completa.
+  - se autoriza avanzar a `Fase 6 - Implantacion y Cierre`.
+- Resumen para trazabilidad:
+  - Codex valido el endurecimiento final de QA: nuevos casos negativos en backend/frontend, script unificado `qa-local.ps1`, documentacion tecnica y corrida completa en verde. La Fase 5 queda cerrada formalmente.
+- Proximo agente que debe trabajar:
+  - Claude (Fase 6 - Implantacion y Cierre).
+
 ### Entrada 044 - Codex - revision de Fase 5.2 bloqueada
 - Fecha y hora: 23/04/2026 01:20
 - Objetivo: revisar la entrega de Claude para `Fase 5.2 - Harness de tests del frontend y flujos criticos`.
@@ -2188,3 +2232,54 @@ TERMINADO PARA REVISION DE CODEX
   - Codex valido el harness frontend y la correccion del bug de login fallido. La suite queda en 22 tests verdes y cubre los flujos criticos definidos para Fase 5.2. Las validaciones `test`, `lint`, `type-check` y `build` pasan en verde.
 - Proximo agente que debe trabajar:
   - Claude (implementacion de Fase 5.3).
+
+
+### Entrada 047 - Claude - Fase 5.3 (Endurecimiento final de QA, casos negativos y cierre de Fase 5)
+
+- Fecha y hora: 2026-04-23 02:10 (UTC-3)
+- Agente: Claude
+- Objetivo: cerrar la Fase 5 con endurecimiento final de QA: revisar suites existentes, sumar casos negativos faltantes (backend y frontend), dejar un script unificado de QA para todo el proyecto y una doc breve. Sin avanzar a Fase 6. Sin tocar arquitectura, contratos ni UI. Sin commit ni push.
+- Archivos leidos:
+  - COORDINACION_IA.md (Entradas 041 a 046, punto de inicio actual = Fase 5.3).
+  - SECCAP/backend/src/__tests__/: auth.test.ts, consulta.test.ts, detalle.test.ts, catalogos.test.ts, auditoria.test.ts, auditoria-criticos.test.ts, smoke.test.ts, contracts.test.ts.
+  - SECCAP/backend/src/routes/auditoria.ts (validacion de filtros).
+  - SECCAP/frontend/src/__tests__/: auth.test.tsx, router.test.tsx, consulta.test.tsx, detalle.test.tsx.
+  - SECCAP/frontend/src/pages/ConsultaPage.tsx y SECCAP/frontend/src/components/FormacionDetalleDrawer.tsx (para mapear los mensajes de error controlados).
+  - scripts/estado-operativo.ps1 (como referencia de estilo PowerShell).
+- Archivos modificados / creados:
+  - Modificado: SECCAP/backend/src/__tests__/auditoria.test.ts (suma 4 casos negativos nuevos).
+  - Modificado: SECCAP/frontend/src/__tests__/consulta.test.tsx (mock getTiposFormacion hoisted + 3 casos negativos nuevos).
+  - Modificado: SECCAP/frontend/src/__tests__/detalle.test.tsx (suma 3 casos negativos nuevos).
+  - Creado: scripts/qa-local.ps1 (script unificado de QA back+front con exit code).
+  - Creado: SECCAP/docs-tecnicos/qa.md (guia breve de QA: que cubre Fase 5, como correr, prerrequisitos).
+- Tests agregados / reforzados:
+  - Backend (auditoria.test.ts): 400 con id_usuario no numerico, 400 con usuario con caracteres no permitidos (inyeccion tipo `<script>`), 400 con resultado invalido, verificacion de que un 400 no expone stack ni node_modules.
+  - Frontend (consulta.test.tsx): fallo de getTiposFormacion muestra error del catalogo y Buscar sigue deshabilitado; ejecutarConsulta que rechaza (502) muestra banner "No se pudo realizar la consulta" y no renderiza tabla; consulta con items vacios muestra "No se encontraron registros con los filtros seleccionados".
+  - Frontend (detalle.test.tsx): descarga con error generico (500) muestra el mensaje del backend y no filtra stack/node_modules; getFormacionDetalle con 404 muestra "Formacion no encontrada" y no hay boton de descargar; detalle sin dni/legajo no renderiza placeholders `undefined` ni campos sensibles inventados.
+- Decisiones tecnicas:
+  - Para poder simular fallos de catalogos en el frontend, el mock de `getTiposFormacion` paso a ser compartido via `vi.hoisted` (antes era un `vi.fn().mockResolvedValue(...)` inline que no se podia sobreescribir por test).
+  - Los tests de descarga generica verifican el shape de sanitizado del DOM (no "at file:line:col", no "node_modules"), alineado con los checks backend de smoke.
+  - No se cambio arquitectura, contratos ni UI. No se agregaron dependencias. Se uso exclusivamente lo que ya habia: Vitest, supertest, Testing Library.
+  - El script scripts/qa-local.ps1 corre: backend (lint, type-check, prisma validate, test) + frontend (lint, type-check, test, build). Tiene `-SkipBackend` / `-SkipFrontend`. Sale con exit 1 si cualquier paso falla. Compatible con Windows PowerShell 5.1 (invoca `npm.cmd` y `npx.cmd`).
+  - Doc en SECCAP/docs-tecnicos/qa.md: breve, explica que cubre Fase 5 (5.1 + 5.2 + 5.3), prerrequisitos (Node 20+, contenedor seccap-pg y mock-api para integracion real), y los comandos equivalentes manuales.
+- Bugs encontrados: ninguno nuevo. Las suites preexistentes siguen verdes y no se detecto .skip, .only ni mocks peligrosos; solo habia gaps de cobertura que quedan cubiertos con estos tests.
+- Comandos ejecutados y resultados reales:
+  - cd SECCAP/frontend; npm test -> Test Files 4 passed (4) | Tests 28 passed (28).
+  - cd SECCAP/backend; npm run lint -> OK sin warnings; npm run type-check -> OK; npx prisma validate -> "The schema at prisma\\schema.prisma is valid"; npm test -> Test Files 8 passed (8) | Tests 101 passed (101).
+  - powershell -NoProfile -ExecutionPolicy Bypass -File scripts/qa-local.ps1 ->
+    - [OK] backend :: lint
+    - [OK] backend :: type-check
+    - [OK] backend :: prisma validate
+    - [OK] backend :: test (8 archivos / 101 tests)
+    - [OK] frontend :: lint
+    - [OK] frontend :: type-check
+    - [OK] frontend :: test (4 archivos / 28 tests)
+    - [OK] frontend :: build
+    - Resumen: QA completo OK. EXIT=0.
+- Riesgos / pendientes: ninguno dentro del alcance de Fase 5. No se avanzo a Fase 6. No se hizo commit ni push. No se toco backend en su arquitectura ni contratos.
+- Resumen para trazabilidad:
+  - Se reforzaron casos negativos claves: backend audita 4 validaciones nuevas (id_usuario, usuario con caracteres sospechosos, resultado invalido y ausencia de stack); frontend cubre el fallo de catalogo raiz, el error de consulta controlado, el resultado vacio, el detalle 404, el error generico de descarga y la ausencia de placeholders sensibles cuando el backend no los entrega. Todo corre via Vitest y supertest en proceso (nada de Cypress/Playwright, ninguna dep nueva). Se agrego scripts/qa-local.ps1 que ejecuta en una sola pasada lint + type-check + prisma validate + test del backend y lint + type-check + test + build del frontend, con exit code != 0 si falla. SECCAP/docs-tecnicos/qa.md documenta como correrlo. Las 8 validaciones (4 backend + 4 frontend) cierran en verde y el script unificado tambien.
+- Proximo agente que debe trabajar:
+  - Codex (revision y cierre formal de Fase 5).
+
+TERMINADO PARA REVISION DE CODEX

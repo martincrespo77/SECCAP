@@ -115,4 +115,53 @@ describe('FormacionDetalleDrawer — errores de descarga', () => {
       expect(screen.getByText(/no hay certificado disponible para esta formación/i)).toBeInTheDocument(),
     );
   });
+
+  it('error genérico (500) muestra el mensaje del backend sin filtrar detalles internos', async () => {
+    getDetalleMock.mockResolvedValueOnce({ ...detalleBase, certificadoDescargable: true });
+    descargarMock.mockRejectedValueOnce(
+      new ApiError('No se pudo generar el certificado', 500),
+    );
+
+    render(<FormacionDetalleDrawer formacionId={42} onClose={() => undefined} />);
+    const btn = await screen.findByRole('button', { name: /descargar certificado/i });
+    const user = userEvent.setup();
+    await user.click(btn);
+
+    await waitFor(() =>
+      expect(screen.getByText(/No se pudo generar el certificado/i)).toBeInTheDocument(),
+    );
+    // El drawer no debe volcar stack, node_modules ni "at ...:NN:NN"
+    const html = document.body.innerHTML;
+    expect(html).not.toMatch(/at .*\(.*:\d+:\d+\)/);
+    expect(html).not.toContain('node_modules');
+  });
+});
+
+describe('FormacionDetalleDrawer — detalle no encontrado', () => {
+  it('si el detalle responde 404, muestra "Formación no encontrada" y no renderiza datos', async () => {
+    getDetalleMock.mockRejectedValueOnce(new ApiError('Formación no encontrada', 404));
+
+    render(<FormacionDetalleDrawer formacionId={999} onClose={() => undefined} />);
+
+    expect(await screen.findByText(/Formación no encontrada/i)).toBeInTheDocument();
+    // No hay botón de descargar certificado ni datos personales
+    expect(screen.queryByRole('button', { name: /descargar certificado/i })).not.toBeInTheDocument();
+    expect(screen.queryByText(/Gómez, Ana/)).not.toBeInTheDocument();
+  });
+
+  it('si el detalle no incluye dni ni legajo, no se renderizan placeholders falsos', async () => {
+    // El backend podó campos sensibles: no hay dni ni legajo en el DTO.
+    const sinSensibles: typeof detalleBase = { ...detalleBase };
+    getDetalleMock.mockResolvedValueOnce(sinSensibles);
+
+    render(<FormacionDetalleDrawer formacionId={42} onClose={() => undefined} />);
+    await screen.findByText(/Gómez, Ana/);
+
+    // No aparecen DNIs o legajos inventados ni strings "undefined" / "null".
+    expect(screen.queryByText(/undefined/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/^null$/i)).not.toBeInTheDocument();
+    const html = document.body.innerHTML;
+    expect(html).not.toMatch(/DNI[^<]{0,10}undefined/i);
+    expect(html).not.toMatch(/Legajo[^<]{0,10}undefined/i);
+  });
 });

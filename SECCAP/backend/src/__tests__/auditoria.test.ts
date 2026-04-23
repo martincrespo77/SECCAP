@@ -205,4 +205,41 @@ describe('Auditoría — filtros', () => {
       .set('Authorization', `Bearer ${auditorToken}`);
     expect(res.status).toBe(400);
   });
+
+  it('devuelve 400 con id_usuario no numérico', async () => {
+    const res = await request(app)
+      .get('/auditoria?id_usuario=abc')
+      .set('Authorization', `Bearer ${auditorToken}`);
+    expect(res.status).toBe(400);
+    expect(res.body.detalle).toEqual(
+      expect.arrayContaining([expect.stringContaining('id_usuario')]),
+    );
+  });
+
+  it('devuelve 400 con usuario que contiene caracteres no permitidos', async () => {
+    const res = await request(app)
+      .get('/auditoria?usuario=' + encodeURIComponent('<script>'))
+      .set('Authorization', `Bearer ${auditorToken}`);
+    expect(res.status).toBe(400);
+    expect(res.body.detalle).toEqual(
+      expect.arrayContaining([expect.stringContaining('usuario')]),
+    );
+  });
+
+  it('devuelve 400 con resultado inválido', async () => {
+    const res = await request(app)
+      .get('/auditoria?resultado=foo')
+      .set('Authorization', `Bearer ${auditorToken}`);
+    expect(res.status).toBe(400);
+  });
+
+  it('en un 400 no se expone stack ni rutas internas', async () => {
+    const res = await request(app)
+      .get('/auditoria?accion=inventada')
+      .set('Authorization', `Bearer ${auditorToken}`);
+    expect(res.status).toBe(400);
+    const body = JSON.stringify(res.body);
+    expect(body).not.toMatch(/at .*\(.*:\d+:\d+\)/);
+    expect(body).not.toContain('node_modules');
+  });
 });

@@ -1,4 +1,5 @@
 import {
+  useCallback,
   useEffect,
   useRef,
   useState,
@@ -127,6 +128,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  const clearLoginError = useCallback(() => setLoginError(null), []);
+  const clearSessionNotice = useCallback(() => setSessionNotice(null), []);
+
   const value: AuthContextValue = {
     status,
     user,
@@ -135,8 +139,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     sessionNotice,
     login,
     logout,
-    clearLoginError: () => setLoginError(null),
-    clearSessionNotice: () => setSessionNotice(null),
+    clearLoginError,
+    clearSessionNotice,
     retrySessionCheck: restoreSession,
   };
 

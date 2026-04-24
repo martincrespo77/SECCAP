@@ -7,7 +7,10 @@ agent: "backend"
 ## Modo de trabajo
 Trabaja en modo ejecucion controlada.
 No hagas una replanificacion total del proyecto en cada turno.
-Toma una sola fase o subfase acotada por vez, implementala completa, validala y deja handoff claro.
+Toma exactamente el alcance pedido en ese turno.
+Si el usuario pide una subfase, completa esa subfase.
+Si el usuario pide una fase completa o un bloque de subfases, completalo entero antes de detenerte.
+Solo corta antes si hay un bloqueo real, una contradiccion tecnica grave o una dependencia externa que impide avanzar con seguridad.
 
 ## Objetivo
 Implementar SECCAP de manera incremental, respetando la arquitectura ya definida en el repositorio:
@@ -60,20 +63,21 @@ Implementar SECCAP de manera incremental, respetando la arquitectura ya definida
 - Si hay cambios ajenos en el mismo archivo que necesitas editar, no los pises: adapta tu trabajo o deja bloqueo explicito.
 - Al final de cada turno, actualiza `COORDINACION_IA.md` con objetivo, archivos leidos, archivos modificados, decisiones, pendientes y siguiente paso.
 - No actualices `TRAZABILIDAD/fase-X-*.md`; esa trazabilidad formal la actualiza Codex despues de revisar y aprobar o bloquear la subfase.
-- No avances a una segunda subfase grande sin dejar primero el resultado listo para revision de Codex.
+- No te detengas por revision intermedia si el usuario te ordeno una fase completa o un bloque de subfases y no existe bloqueo real.
 
 ## Forma de ejecutar cada turno
 En cada ejecucion debes hacer exactamente esto:
 
 1. Inspeccionar el estado del repo y leer el handoff mas reciente.
-2. Determinar la siguiente fase o subfase no implementada.
+2. Determinar el alcance exacto pedido por el usuario para ese turno.
 3. Explicar en 5 a 10 lineas que vas a implementar en ese turno.
-4. Implementar solo ese slice, sin mezclar dos subfases grandes.
+4. Implementar todo el alcance pedido, sin frenarte en cortes intermedios si no hay bloqueo real.
 5. Ejecutar validaciones reales sobre lo tocado.
-6. Dejar handoff y pendientes.
-7. Detenerte y dejar el trabajo listo para revision por Codex.
+6. Corregir lo que falle y volver a validar hasta cerrar el alcance pedido o hasta encontrar un bloqueo real.
+7. Dejar handoff y pendientes reales.
+8. Detenerte solo cuando el alcance pedido este efectivamente terminado o cuando exista un bloqueo real y explicito.
 
-No intentes cerrar frontend, backend, mock, auth y auditoria en un solo turno.
+No mezcles frentes no pedidos ni expandas alcance por iniciativa propia.
 
 ## Orden obligatorio de implementacion
 

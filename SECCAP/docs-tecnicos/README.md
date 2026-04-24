@@ -1,14 +1,18 @@
 # Documentación Técnica — SECCAP
 
-Esta carpeta contiene documentación técnica de implementación del sistema.
+Esta carpeta contiene documentación técnica de implementación, operación, QA y capacitación del sistema.
 
-## Contenido previsto
+## Contenido
 
-| Documento | Descripción | Estado |
-|---|---|---|
-| Contrato Mock API | Endpoints, request/response, errores | Pendiente (Fase 2.3) |
-| Contrato Backend Proxy | Endpoints internos, RBAC, validaciones | Pendiente (Fase 3.x) |
-| Esquema BD Local | DDL, migraciones, seed | Pendiente (Fase 2.2) |
-| Guía de Testing | Estrategia y cobertura mínima | Pendiente (Fase 3.x) |
+| Documento | Descripción |
+|---|---|
+| [implantacion.md](implantacion.md) | Guía técnica de implantación (Fase 6) |
+| [operacion.md](operacion.md) | Operación diaria y diagnóstico (Fase 6) |
+| [capacitacion_operadores.md](capacitacion_operadores.md) | Material de capacitación para operadores (Fase 6) |
+| [qa.md](qa.md) | Estrategia, alcance y comandos de QA (Fase 5) |
 
-Los documentos se crearán conforme avance la implementación por fases.
+## Documentos relacionados fuera de esta carpeta
+
+- Manual de usuario: [../docs/manual_usuario.md](../docs/manual_usuario.md)
+- Guía técnica general del monorepo: [../README.md](../README.md)
+- Documentación PMBOK y UML: raíz del repositorio (`DOCUMENTOS/`, `UML/`).

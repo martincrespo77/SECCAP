@@ -2093,6 +2093,214 @@ px prisma validate en SECCAP/backend -> OK
 
 TERMINADO PARA REVISION DE CODEX
 
+### Entrada 066 - Codex - reformulacion del documento 19 como anteproyecto formal
+
+- Fecha y hora: 2026-04-27 00:41 (UTC-3)
+- Objetivo: corregir el documento `ANTEPROYECTO/19_documento_integrado_anteproyecto_y_proyecto.md` para que deje de leerse como proyecto implementado o parcialmente ejecutado y pase a presentarse como anteproyecto formal, prospectivo e institucional.
+- Archivo modificado:
+  - `ANTEPROYECTO/19_documento_integrado_anteproyecto_y_proyecto.md`
+- Cambios aplicados:
+  - Se reemplazo el enfoque de "implementacion realizada" por redaccion a futuro, con foco en tecnologias, capas, metodologia y plan anual.
+  - Se paso a nombrar explicitamente al **Ejercito Argentino** como institucion de referencia.
+  - Se elimino la exposicion de archivos individuales del anteproyecto dentro del cuerpo y de las referencias.
+  - Se fijo costo economico directo **$0** por uso de recursos del Ejercito Argentino y del CPSGEA.
+  - Se actualizaron participantes e interesados con los datos aportados por el usuario: CPSGEA, CT COLLADO y CT Martin Exequiel CRESPO.
+  - Se excluyeron referencias a tests, QA ejecutado e implementacion cerrada.
+  - Se redefinieron los usuarios previstos: JEMGE, SubJEMGE, Director General de Personal, Administrador y Auditor.
+  - Se reemplazo el cronograma corto de 14 semanas por un cronograma anual 2026 con inicio de implementacion en agosto y horizonte hasta noviembre.
+  - Se sustituyeron las referencias internas por referencias generales: Ley 25.326 y PMBOK.
+  - Se agrego un apartado de siglas y acronimos.
+- Criterio de fidelidad:
+  - El documento deja de mezclar anteproyecto con evidencia de implementacion y queda alineado a su funcion formal de planificacion institucional.
+  - Cuando un dato institucional no estaba completamente definido, se mantuvo una formulacion conservadora y no inventada.
+- Validaciones ejecutadas:
+  - Revision documental manual de coherencia de estructura, actores, cronograma, costo y referencias.
+- Resumen para trazabilidad:
+  - El documento 19 quedo reconvertido en una pieza formal de anteproyecto, apta para presentacion institucional o academica sin contaminarse con lenguaje de proyecto ya implementado.
+
+### Entrada 067 - Codex - agregado de portada, indice y alcance al documento 19
+
+- Fecha y hora: 2026-04-27 00:49 (UTC-3)
+- Objetivo: completar el documento `ANTEPROYECTO/19_documento_integrado_anteproyecto_y_proyecto.md` con tres elementos formales faltantes: cuadro de titulo tipo portada, indice navegable y apartado de alcance.
+- Archivo modificado:
+  - `ANTEPROYECTO/19_documento_integrado_anteproyecto_y_proyecto.md`
+- Cambios aplicados:
+  - Se agrego una portada en formato Markdown con campos: Titulo, Autor, Usuario, Promotor y Version.
+  - Se dejo una linea de reserva para logo institucional CPSGEA / Ejercito Argentino, sin inventar ni embebir un archivo grafico inexistente.
+  - Se agrego un indice navegable con los apartados principales del documento.
+  - Se incorporo la seccion `Alcance`, separando alcance incluido, fuera de alcance y restriccion principal del proyecto.
+- Criterio aplicado:
+  - Se mantuvo el documento en tono de anteproyecto institucional y no de implementacion realizada.
+  - El alcance se redacto en terminos de solucion futura, conservando la restriccion read-only y evitando derivar a un sistema transaccional de gestion de personal.
+- Validaciones ejecutadas:
+  - Revision manual de estructura, orden de secciones y coherencia con el enfoque formal del anteproyecto.
+- Resumen para trazabilidad:
+  - El documento 19 ya cuenta con una portada formal, indice y delimitacion de alcance, quedando mas cercano al formato de presentacion institucional solicitado por el usuario.
+
+### Entrada 065 - Codex - documento integrado de anteproyecto y proyecto
+
+- Fecha y hora: 2026-04-27 00:18 (UTC-3)
+- Objetivo: crear un documento nuevo, mas acotado y formal, que sintetice el anteproyecto y el proyecto implementado de SECCAP bajo una estructura academica concreta: titulo, abstract, antecedentes, problema, justificacion, objetivos, marco referencial, metodologias, participantes, cronograma, analisis, desarrollo del anteproyecto, referencias, caso de negocio, canvas y plan de beneficios con cuantificacion.
+- Archivos leidos:
+  - `ANTEPROYECTO/01_definicion_problema.md`
+  - `ANTEPROYECTO/02_objetivos.md`
+  - `ANTEPROYECTO/04_stakeholders_actores.md`
+  - `ANTEPROYECTO/10_arquitectura_tecnologias.md`
+  - `ANTEPROYECTO/11_viabilidad.md`
+  - `ANTEPROYECTO/12_planificacion_cronograma.md`
+  - `ANTEPROYECTO/13_recursos_presupuesto.md`
+  - `ANTEPROYECTO/15_metricas_exito.md`
+  - `ANTEPROYECTO/17_consolidacion_final.md`
+  - `ANTEPROYECTO/18_borrador_anteproyecto_actual.md`
+  - `DOCUMENTOS/01_acta_constitucion.md`
+  - `DOCUMENTOS/04_cronograma.md`
+  - `DOCUMENTOS/05_costos.md`
+  - `DOCUMENTOS/09_requisitos.md`
+  - `DOCUMENTOS/12_cierre.md`
+  - `SECCAP/README.md`
+- Archivo creado:
+  - `ANTEPROYECTO/19_documento_integrado_anteproyecto_y_proyecto.md`
+- Criterio de redaccion aplicado:
+  - Se tomo la informacion certera del anteproyecto y del proyecto ya cerrado tecnicamente.
+  - Se evito prometer funcionalidades que el sistema modelaba pero no entrego visualmente, como UI administrativa o UI frontend de auditoria.
+  - Cuando faltan nombres propios reales en el repositorio, se consignan roles y se marca el pendiente de validacion humana.
+  - La cuantificacion se mantuvo conservadora: horas, duracion, costo directo, costo contingente y evidencia tecnica real, sin inventar ROI financiero.
+- Contenido consolidado:
+  - problema y oportunidad del proyecto,
+  - justificacion operativa, de seguridad y arquitectonica,
+  - objetivos generales y especificos,
+  - marco teorico, conceptual, tecnologico y normativo,
+  - metodologia iterativa por fases,
+  - participantes por rol,
+  - caso de negocio,
+  - modelo canvas adaptado a proyecto interno,
+  - plan de beneficios y cuantificacion,
+  - cronograma de alto nivel,
+  - analisis de propuesta,
+  - cierre sobre continuidad entre anteproyecto e implementacion.
+- Resumen para trazabilidad:
+  - Se genero un documento puente entre el anteproyecto y el sistema realmente entregado, util para presentacion formal, memoria resumida o base de trabajo academico, manteniendo fidelidad con el repositorio y sin mezclar alcance futuro con alcance implementado.
+
+
+### Entrada 063 - Codex - correccion puntual residual en guia de exposicion oral
+
+- Fecha y hora: 2026-04-24 11:05 (UTC-3)
+- Agente: Codex
+- Objetivo: corregir directamente la unica frase residual que todavia sobreprometia un flujo administrativo no implementado en `SECCAP/docs-tecnicos/guia_exposicion_oral_seccap.md`.
+- Archivo corregido:
+  - `SECCAP/docs-tecnicos/guia_exposicion_oral_seccap.md`
+- Correccion aplicada:
+  - En la respuesta 17.4 sobre sesiones en BD se reemplazo la frase "por accion administrativa o por deteccion de comportamiento anomalo" por una formulacion fiel al sistema entregado: "por logout explicito o por revocacion tecnica del registro de sesion".
+- Validaciones ejecutadas:
+  - No se ejecutaron tests ni build: cambio documental de una sola linea, sin impacto en codigo.
+- Resultado:
+  - La guia queda alineada tambien en ese ultimo matiz de fidelidad funcional.
+- Resumen para trazabilidad:
+  - Se cerro directamente desde Codex la unica observacion residual pendiente en la guia de exposicion oral, sin volver a delegar a Claude.
+
+
+### Entrada 064 - Codex - creacion de DESIGN.md para Stitch alineado al frontend real
+
+- Fecha y hora: 2026-04-25 00:08 (UTC-3)
+- Agente: Codex
+- Objetivo: crear un `DESIGN.md` util para Stitch, alineado al stack y a las convenciones reales de `SECCAP/frontend`, de modo que futuras iteraciones de UI no rompan la arquitectura existente ni deriven en un diseño generico.
+- Archivo creado:
+  - `DESIGN.md`
+- Alcance del documento:
+  - direccion visual institucional
+  - stack real (React 19, TypeScript, Vite, Tailwind, React Router, Axios)
+  - convenciones React del proyecto
+  - restricciones de UI y arquitectura
+  - tono visual, responsive, accesibilidad y placeholders de dominio
+  - preservacion del tema por rol ya implementado
+- Restricciones respetadas:
+  - no se toco codigo de frontend ni backend
+  - no se hicieron commits ni push
+  - no se toco `docs-uml/`
+- Resumen para trazabilidad:
+  - Se dejo un contrato de diseño reutilizable para Stitch y para futuros prompts de frontend, de forma que las mejoras visuales queden alineadas con el frontend real ya construido.
+
+
+### Entrada 062 - Codex - revision de guia de exposicion oral tras correccion y observacion residual
+
+- Fecha y hora: 2026-04-24 11:01 (UTC-3)
+- Agente: Codex
+- Objetivo: revisar la correccion reportada por Claude sobre `SECCAP/docs-tecnicos/guia_exposicion_oral_seccap.md`, validar fidelidad funcional y enlaces internos, y decidir el estado del documento.
+- Archivos revisados:
+  - `SECCAP/docs-tecnicos/guia_exposicion_oral_seccap.md`
+  - `SECCAP/frontend/src/router/AppRouter.tsx`
+  - `SECCAP/backend/src/app.ts`
+  - `SECCAP/backend/prisma/seed.ts`
+  - `DOCUMENTOS/12_cierre.md`
+- Verificaciones realizadas:
+  - Se confirmo que los enlaces internos del documento resuelven correctamente desde `SECCAP/docs-tecnicos/` (`links_bad=0` en chequeo automatizado de 52 links Markdown).
+  - Se confirmo que ya no se presenta una UI de auditoria inexistente y que el `admin` ya no se describe como si tuviera una UI administrativa operativa en la entrega actual.
+- Resultado de la revision:
+  - La guia quedo corregida y actualizada en sus bloqueos principales: fidelidad de auditoria, alcance real del admin y enlaces Markdown.
+  - Permanece una observacion residual no bloqueante en la respuesta 17.4: se menciona invalidacion inmediata de sesion "por accion administrativa o por deteccion de comportamiento anomalo", cuando hoy esa revocacion solo existe de forma explicita por logout y por expiracion/revocacion de sesion persistida, sin UI ni flujo administrativo implementado para esas acciones.
+- Decision:
+  - La guia queda sustancialmente saneada y utilizable para exposicion oral.
+  - Si se la quiere dejar impecable desde el punto de vista de fidelidad estricta, conviene ajustar esa frase puntual antes de cerrar definitivamente este frente.
+- Resumen para trazabilidad:
+  - El documento ya no promete UIs inexistentes y sus enlaces funcionan. Solo queda una frase residual de sobrepromesa operativa en el apartado de preguntas frecuentes sobre sesiones.
+
+
+### Entrada 061 - Codex - aprobacion de diferenciacion visual por rol en frontend
+
+- Fecha y hora: 2026-04-24 10:44 (UTC-3)
+- Agente: Codex
+- Objetivo: revisar la correccion final reportada por Claude en Entrada 060, validar que la Home quede alineada con el estado real del sistema y decidir la aprobacion del cambio visual por rol.
+- Archivos revisados:
+  - `SECCAP/frontend/src/auth/role-theme.ts`
+  - `SECCAP/frontend/src/layout/AppShell.tsx`
+  - `SECCAP/frontend/src/pages/AppHomePage.tsx`
+  - `SECCAP/frontend/src/pages/ConsultaPage.tsx`
+  - `SECCAP/frontend/src/__tests__/role-theme.test.ts`
+  - `SECCAP/frontend/src/__tests__/role-theme-shell.test.tsx`
+- Validaciones ejecutadas:
+  - `cd SECCAP/frontend && npm test` -> OK (43/43)
+  - `cd SECCAP/frontend && npm run lint` -> OK
+  - `cd SECCAP/frontend && npm run type-check` -> OK
+  - `cd SECCAP/frontend && npm run build` -> OK
+- Resultado de la revision:
+  - El copy de `AppHomePage.tsx` ya no contradice el sistema implementado.
+  - La diferenciacion visual por rol queda bien resuelta: helper centralizado, precedencia `admin > auditor > consultor`, sin inventar pantallas nuevas y sin tocar backend ni contratos.
+  - El cambio queda aprobado.
+- Observaciones:
+  - Persiste una duplicacion historica de numeracion en `Entrada 058`, pero ya no bloquea este frente. No conviene reescribir la historia de la bitacora.
+- Resumen para trazabilidad:
+  - Se aprueba la identidad visual por rol en frontend. La UI ahora permite distinguir rapidamente consultor, auditor y admin dentro de la misma aplicacion entregada, sin introducir funcionalidades inexistentes y manteniendo la suite frontend completamente en verde.
+
+
+### Entrada 059 - Codex - revision de diferenciacion visual por rol y bloqueo menor por texto desactualizado
+
+- Fecha y hora: 2026-04-24 10:36 (UTC-3)
+- Agente: Codex
+- Objetivo: revisar la implementacion de tema visual por rol en frontend, validar que no invente pantallas nuevas, verificar tests reales y decidir si el cambio queda aprobado.
+- Archivos revisados:
+  - `SECCAP/frontend/src/auth/role-theme.ts`
+  - `SECCAP/frontend/src/layout/AppShell.tsx`
+  - `SECCAP/frontend/src/pages/AppHomePage.tsx`
+  - `SECCAP/frontend/src/pages/ConsultaPage.tsx`
+  - `SECCAP/frontend/src/__tests__/role-theme.test.ts`
+  - `SECCAP/frontend/src/__tests__/role-theme-shell.test.tsx`
+- Validaciones ejecutadas:
+  - `cd SECCAP/frontend && npm test` -> OK (43/43)
+  - `cd SECCAP/frontend && npm run lint` -> OK
+  - `cd SECCAP/frontend && npm run type-check` -> OK
+  - `cd SECCAP/frontend && npm run build` -> OK
+- Hallazgos:
+  - La diferenciacion visual por rol esta bien implementada a nivel tecnico: helper centralizado, precedencia `admin > auditor > consultor`, acentos visibles en shell, home y consulta, y sin tocar backend ni contratos.
+  - El cambio NO inventa una UI de auditoria ni una UI administrativa; solo tematiza la UI ya existente, que era el enfoque correcto.
+  - Existe un desvio funcional visible en `SECCAP/frontend/src/pages/AppHomePage.tsx`: el texto sigue diciendo que las pantallas de filtros, resultados y detalle quedan reservadas para subfases siguientes, cuando esas capacidades ya estan implementadas en la entrega actual.
+  - Existe ademas una inconsistencia de trazabilidad: Claude reutilizo `Entrada 058` en lugar del siguiente numero correlativo.
+- Decision:
+  - El tema visual por rol queda tecnicamente bien encaminado, pero NO se aprueba todavia hasta corregir el texto desactualizado de la Home y dejar consistente la trazabilidad.
+- Resumen para trazabilidad:
+  - El frontend ya distingue visualmente consultor, auditor y admin con una implementacion sobria y centralizada, y las validaciones tecnicas estan en verde. El unico bloqueo funcional restante es un copy viejo en la Home que contradice el estado real del sistema, mas la numeracion duplicada en la bitacora.
+- Proximo agente que debe trabajar:
+  - Claude (correccion final del copy de Home y regularizacion de handoff para nueva revision de Codex).
+
 
 ### Entrada 054 - Codex - segunda revision de Fase 6, QA verde y bloqueo residual
 
@@ -2610,3 +2818,175 @@ TERMINADO PARA REVISION DE CODEX
   - `docs-uml/` y `.github/workflows/` quedan fuera de esta aprobacion porque pertenecen a un frente paralelo.
 - Resumen para trazabilidad:
   - La correccion final del manual dejo la documentacion de Fase 6 consistente con la UI y el backend reales. El QA unificado volvio a pasar completamente en verde. Con esto se aprueba Fase 6 y se cierra tecnicamente el proyecto principal SECCAP.
+
+### Entrada 057 - Claude - Guia pedagogica de exposicion oral del proyecto SECCAP
+
+- Fecha: 2026-04-24
+- Objetivo: Producir una guia unica, extensa y pedagogica, pensada para que el alumno pueda defender oralmente el proyecto SECCAP frente a docentes o evaluadores, cubriendo arquitectura, tecnologias, capas, logica de negocio, seguridad, UML, flujo completo de uso, guion de exposicion, bateria de preguntas y respuestas, y cierre. El usuario pidio explicitamente que sea un documento "completo y detallado pero no pesado de leer", apto para estudiar y tener a mano durante la exposicion.
+- Archivos leidos antes de escribir (reconocimiento del repositorio real, no inventado):
+  - `COORDINACION_IA.md` (historial completo hasta Entrada 056 para saber el estado real del proyecto y el numero de entrada siguiente).
+  - `SECCAP/README.md` (overview oficial del producto).
+  - `SECCAP/backend/src/app.ts`, `config.ts`, `prisma.ts`, `routes/auth.ts`, `routes/consulta.ts`, `routes/detalle.ts`, `routes/catalogos.ts`, `routes/auditoria.ts`, `routes/health.ts`, `middleware/authenticate.ts`, `middleware/authorize.ts`, `services/external-api.ts`, `services/mapper.ts`, `services/poda.ts`, `services/auditoria.ts`.
+  - `SECCAP/backend/prisma/schema.prisma`, `prisma/seed.ts`.
+  - `SECCAP/frontend/src/main.tsx`, `App.tsx`, `router/AppRouter.tsx`, `auth/AuthContext.tsx`, `api/http.ts`, `pages/*.tsx`, `components/*.tsx`, `layout/AppShell.tsx`.
+  - `SECCAP/mock-api/src/app.ts`, `src/routes/formaciones.ts`.
+  - `DOCUMENTOS/01_acta_constitucion.md` y citas puntuales de `12_cierre.md` para limitaciones documentadas.
+  - `UML/01_casos_uso_general.puml`, `02_clases_analisis_bce.puml`, `06_componentes_arquitectura.puml`, `07_despliegue_logico.puml`, `10_er_bd_local.puml` (y referencia a los restantes diagramas del directorio).
+  - `.env.example`, `.gitignore`, `scripts/qa-local.ps1`.
+- Archivo creado: `SECCAP/docs-tecnicos/guia_exposicion_oral_seccap.md`.
+- Enfoque del documento:
+  - Pedagogico sin infantilizar: define cada concepto (JWT, SPA, RBAC, BCE, ORM, ACL, proxy, autenticacion vs autorizacion) la primera vez que aparece.
+  - Aterrizado al repo real: cita rutas concretas, archivos concretos, tablas concretas, permisos concretos (`consulta:leer`, `consulta:detalle`, `consulta:certificado`, `catalogos:leer`, `auditoria:leer`).
+  - Honesto con las limitaciones: menciona explicitamente que SHA-256 sin sal y `JWT_SECRET` placeholder son condiciones de pase a produccion, no defectos ocultos.
+  - Marca diferencias entre lo seedeado y lo implementado con UI (rol admin sin UI administrativa en esta entrega, `cache_catalogo` como preparacion no cableada).
+  - No inventa modulos, features ni tecnologias que el repositorio no contiene.
+- Estructura del documento (18 secciones): titulo + resumen ejecutivo, problema resuelto, vision general, arquitectura simple, capas y modulos, tecnologias por capa, explicacion del backend (endpoints, proteccion, manejo de errores, traduccion de errores upstream), explicacion del frontend (SPA, rutas, auth context, flujo de consulta), mock-api, base de datos local (que guarda y que no), logica de negocio (RN-01, filtros jerarquicos, poda, auditoria, sesion, bloqueo, roles), seguridad informatica aplicada (10 apartados con limitaciones reconocidas), UML explicado diagrama por diagrama, flujo completo de uso (login, consulta, detalle, descarga, auditoria), como exponer (orden, arranque, como defender decisiones, errores comunes), guion sugerido 10-15 minutos minuto a minuto, 16 preguntas-respuestas frecuentes del jurado, y conclusion final de defensa.
+- Restricciones respetadas: no se toco codigo, no se ejecuto git, no se modifico `docs-uml/`, no se hizo commit ni push, no se crearon archivos fuera del destino pedido. Unica escritura: el archivo guia + esta entrada en la bitacora.
+- Resumen para Codex: la guia esta lista en `SECCAP/docs-tecnicos/guia_exposicion_oral_seccap.md` y es el artefacto unico para defensa oral. Cubre arquitectura, stack, flujo completo, seguridad con limitaciones reconocidas, UML mapeado al codigo, guion de 10-15 minutos y preguntas frecuentes con respuestas. No requiere cambios de codigo ni afecta el cierre tecnico aprobado en la Entrada 056.
+
+TERMINADO PARA REVISION DE CODEX
+
+
+### Entrada 058 - Codex - revision de guia de exposicion oral y bloqueo por desvios de fidelidad
+
+- Fecha y hora: 2026-04-24 08:35 (UTC-3)
+- Agente: Codex
+- Objetivo: revisar `SECCAP/docs-tecnicos/guia_exposicion_oral_seccap.md` con foco en utilidad real para defensa oral, fidelidad contra el sistema implementado y calidad del material pedagogico.
+- Archivos revisados:
+  - `SECCAP/docs-tecnicos/guia_exposicion_oral_seccap.md`
+  - `SECCAP/frontend/src/router/AppRouter.tsx`
+  - `SECCAP/frontend/src/pages/ConsultaPage.tsx`
+  - `SECCAP/frontend/src/components/FormacionDetalleDrawer.tsx`
+- Hallazgos bloqueantes:
+  - La guia vuelve a presentar una `UI de auditoria` como si existiera en la entrega actual. Eso contradice el frontend real, que solo expone `/app` y `/app/consulta`.
+  - La guia vuelve a presentar al `admin` como si gestionara el sistema en la entrega actual, cuando la administracion con UI o endpoints expuestos sigue fuera de alcance.
+  - Gran parte de los links Markdown internos estan mal resueltos para la ubicacion real del archivo (`SECCAP/docs-tecnicos/`), por lo que el documento pierde usabilidad como apoyo navegable.
+- Decision:
+  - La guia NO queda aprobada todavia.
+  - El contenido base es bueno, pero necesita una correccion final de fidelidad y de enlaces antes de poder darse por cerrada.
+- Resumen para trazabilidad:
+  - El documento es fuerte en estructura, tono y cobertura, pero todavia mezcla material oral util con dos promesas funcionales no implementadas (UI de auditoria y administracion real del admin) y con enlaces internos rotos por rutas relativas incorrectas.
+- Proximo agente que debe trabajar:
+  - Claude (correccion final de la guia de exposicion oral y nueva entrega para revision de Codex).
+
+### Entrada 058 - Claude - Diferenciacion visual por rol en la UI del shell autenticado
+
+- Fecha y hora: 2026-04-24 10:18 (UTC-3)
+- Objetivo: implementar una identidad visual clara por rol (consultor / auditor / admin) en la UI existente de SECCAP, sin inventar pantallas nuevas ni romper la arquitectura vigente. La UI debe permitir identificar rapidamente el rol autenticado y respetar la precedencia `admin > auditor > consultor` cuando hay multiples roles.
+- Archivos leidos antes de editar:
+  - `COORDINACION_IA.md` (estado actual, cierre tecnico aprobado en Entrada 056 + guia de exposicion en 057).
+  - `SECCAP/frontend/src/layout/AppShell.tsx` (shell autenticado real).
+  - `SECCAP/frontend/src/pages/AppHomePage.tsx` (home autenticada real).
+  - `SECCAP/frontend/src/pages/ConsultaPage.tsx` (pantalla de consulta real).
+  - `SECCAP/frontend/src/auth/AuthContext.tsx`, `auth-context.ts`, `useAuth.ts`.
+  - `SECCAP/frontend/src/types/auth.ts` (forma de `user.roles`).
+  - `SECCAP/frontend/src/__tests__/router.test.tsx`, `consulta.test.tsx` (patrones de testing existentes).
+  - `SECCAP/frontend/src/test/setup.ts` (se confirmo que `@testing-library/jest-dom/vitest` ya esta cargado).
+- Archivos modificados:
+  - `SECCAP/frontend/src/auth/role-theme.ts` (nuevo). Helper central que resuelve el rol visual efectivo desde `user.roles` y devuelve un `RoleTheme` con etiquetas y clases Tailwind listas para consumir. Unica fuente de verdad para la estetica por rol.
+  - `SECCAP/frontend/src/layout/AppShell.tsx`: aplica `resolveRoleTheme(user?.roles)` al header (eyebrow "SECCAP" y nuevo badge de rol visible), a la tarjeta de "Sesion activa" (borde + fondo suave tematicos), a la tarjeta lateral "Acceso autenticado" (fondo + color del icono + descripcion propia del rol) y a los `NavLink` activo/inactivo. Agrega `data-role-theme` en el contenedor raiz y `data-testid` estables en badge / session-card / sidebar-card.
+  - `SECCAP/frontend/src/pages/AppHomePage.tsx`: aplica acento tematico al banner "Fase 4.1" (borde + fondo suave + eyebrow), suma un badge "Rol activo" visible (`data-testid="home-role-badge"`) y usa `accentText` para los iconos de las tarjetas.
+  - `SECCAP/frontend/src/pages/ConsultaPage.tsx`: importa `resolveRoleTheme` y consume `AuthContext` de manera tolerante (via `useContext`, para no romper los tests aislados existentes que montan `ConsultaPage` sin `AuthProvider`). Aplica `theme.primaryButton` al boton "Buscar", `theme.dataPill` a la pildora de `tipoFormacion` en la tabla y agrega un badge de rol en el header de la pantalla.
+  - `SECCAP/frontend/src/__tests__/role-theme.test.ts` (nuevo). Tests unitarios del helper.
+  - `SECCAP/frontend/src/__tests__/role-theme-shell.test.tsx` (nuevo). Tests de integracion del shell + home por rol.
+- Estrategia visual elegida por rol:
+  - `consultor`: linea visual azul institucional (blue-900 / blue-800 / blue-50). Mantiene la identidad actual del shell.
+  - `auditor`: linea ambar sobria (amber-950 sidebar, amber-800 nav activo, amber-50 soft, amber-800 eyebrow). Se lee como ocre/dorado apagado, claramente distinta del azul sin ser estridente.
+  - `admin`: linea granate/borgo├▒a (rose-950 sidebar, rose-900 nav activo, rose-50 soft, rose-900 eyebrow). Se lee como rojo institucional oscuro.
+  - Todos conservan el fondo institucional (bg `bg-white/88-90` en tarjetas), solo cambian acentos y bloques fuertes.
+- Regla de precedencia: `admin > auditor > consultor`. Implementada en `pickRole()` dentro del helper. Caso borde: roles vacios, nulos o desconocidos caen a `consultor` como tema sobrio por defecto.
+- Contratos respetados:
+  - No se toco backend.
+  - No se modificaron permisos ni rutas.
+  - No se agregaron dependencias nuevas (se usa Tailwind ya presente y `lucide-react` existente).
+  - No se toco `docs-uml/` ni se hizo commit/push.
+  - Las decisiones de alcance (sin UI especifica de auditoria ni UI administrativa) se respetaron: solo se agrego identidad visual en las pantallas actuales.
+- Tests agregados o ajustados:
+  - Agregados: `role-theme.test.ts` (9 casos) valida resolucion por rol, precedencia con multiples roles, casos borde (sin roles, desconocido) y que los conjuntos de clases devuelvas sean distintos entre si. Los tests NO se atan a clases Tailwind exactas: verifican identidad de rol, etiqueta visible y diferenciacion de estilos.
+  - Agregados: `role-theme-shell.test.tsx` (6 casos) valida que el shell autenticado renderice el badge con `data-role` correcto para consultor, auditor y admin, que aplique la precedencia admin > auditor > consultor y auditor > consultor, y que la Home tambien exponga el badge del rol activo.
+  - Ajustados: ninguno. Para no romper `consulta.test.tsx` (que renderiza `ConsultaPage` sin `AuthProvider`), `ConsultaPage` ahora consume el contexto via `useContext(AuthContext)` sin lanzar.
+- Comandos ejecutados (en `SECCAP/frontend`):
+  - `npm run lint` -> OK (sin errores).
+  - `npm run type-check` -> OK.
+  - `npm test` -> 43/43 tests pasaron (6 archivos de test). Nuevo archivo `role-theme.test.ts` 9/9 y `role-theme-shell.test.tsx` 6/6.
+  - `npm run build` -> build OK (`dist/assets/index-*.css` 30.70 kB, `index-*.js` 320.09 kB, construido en ~3.7 s).
+- Resultados reales:
+  - La UI arranca con tema consistente segun el rol autenticado desde el momento en que `/auth/me` restaura la sesion.
+  - El badge de rol es visible en el header del shell, en el bloque superior de la Home y en el header de la pantalla Consulta.
+  - La tarjeta lateral izquierda ("Acceso autenticado") cambia de color y texto por rol, eliminando el mensaje generico anterior "Consulta de formacion activa" a favor de una descripcion acorde al rol.
+  - El NavLink activo adopta el tono del rol (azul, ambar oscuro o granate) en ambas entradas del menu.
+  - El boton primario "Buscar" y la pildora de `tipoFormacion` en la tabla de Consulta adoptan el acento del rol sin perder legibilidad.
+- Resumen para revision de Codex:
+  - Cambio contenido en frontend, sin tocar backend, contratos ni permisos.
+  - Unica nueva responsabilidad es `SECCAP/frontend/src/auth/role-theme.ts`: resuelve rol visual y expone clases centralizadas. El resto de componentes consume ese helper.
+  - Precedencia explicita: `admin > auditor > consultor`, con fallback sobrio a consultor.
+  - Suite de tests frontend completa y en verde (43/43). Build y type-check OK.
+  - Si se desea revertir: alcanza con eliminar `role-theme.ts`, `role-theme.test.ts`, `role-theme-shell.test.tsx` y restaurar los 3 componentes modificados (`AppShell`, `AppHomePage`, `ConsultaPage`). No hay cambios de rutas, contratos ni seguridad.
+
+TERMINADO PARA REVISION DE CODEX
+
+### Entrada 060 - Claude - correccion de copy desactualizado en Home (bloqueo menor Entrada 059)
+
+- Fecha y hora: 2026-04-24 10:38 (UTC-3)
+- Agente: Claude
+- Objetivo: levantar el unico bloqueo funcional senalado por Codex en la Entrada 059: el texto de `SECCAP/frontend/src/pages/AppHomePage.tsx` afirmaba que las pantallas de filtros, resultados y detalle quedaban reservadas para subfases siguientes, cuando esas capacidades ya estan operativas en la entrega actual.
+- Archivo corregido:
+  - `SECCAP/frontend/src/pages/AppHomePage.tsx`
+- Texto desactualizado corregido:
+  - Eyebrow cambiado de `Fase 4.1` a `SECCAP`.
+  - Titulo cambiado de `Shell autenticado operativo` a `Consulta segura en operación`.
+  - Parrafo reescrito: antes decia "La autenticacion, la restauracion de sesion y el resguardo de rutas ya estan activos. Las pantallas de filtros, resultados y detalle quedan reservadas para las siguientes subfases." Ahora dice: "La autenticacion, la restauracion de sesion y el resguardo de rutas estan activos. La pantalla de consulta con filtros jerarquicos, resultados paginados, panel de detalle y descarga de certificado ya forman parte de esta entrega. Ingresa a «Consulta» desde el menu lateral para operar sobre la API institucional a traves del proxy."
+  - Tarjeta central del bloque "Estado del modulo": antes decia `Rutas / Protección aplicada`, ahora dice `Consulta / Filtros, resultados y detalle operativos`, que refleja el estado real de la entrega.
+- No se toco backend, contratos, permisos, rutas, `docs-uml/` ni se hizo commit/push. Solo se ajusto copy del componente Home.
+- Se respeta la trazabilidad: no se reescribe la historia previa. La duplicacion de numeracion de `Entrada 058` queda reconocida en la Entrada 059 de Codex y esta entrada avanza al siguiente numero disponible (060).
+- Validaciones ejecutadas (en `SECCAP/frontend`):
+  - `npm test` -> OK, 43/43 tests en 6 archivos.
+  - `npm run lint` -> OK, sin advertencias.
+  - `npm run type-check` -> OK (`tsc --noEmit`).
+  - `npm run build` -> OK (`dist/assets/index-BWUIquTy.js` 320.27 kB, CSS 30.70 kB, construido en ~4.3 s).
+- Resultados reales:
+  - La Home ahora describe correctamente el estado del sistema (consulta operativa end-to-end) y ya no promete pantallas futuras que estan implementadas.
+  - El tema visual por rol se mantiene intacto y las validaciones tecnicas siguen en verde.
+- Resumen para Codex:
+  - Bloqueo de copy de la Entrada 059 resuelto. La diferenciacion visual por rol queda lista para aprobacion final.
+
+TERMINADO PARA REVISION DE CODEX
+
+### Entrada 061 - Claude - correccion final de guia de exposicion oral (bloqueo Entrada 058 de Codex)
+
+- Fecha y hora: 2026-04-24 10:52 (UTC-3)
+- Agente: Claude
+- Objetivo: levantar los bloqueos de fidelidad y usabilidad senalados por Codex en la Entrada 058 sobre `SECCAP/docs-tecnicos/guia_exposicion_oral_seccap.md`, dejando la guia alineada con el sistema realmente entregado y con los enlaces internos funcionando desde su ubicacion real.
+- Archivo corregido:
+  - `SECCAP/docs-tecnicos/guia_exposicion_oral_seccap.md`
+- Afirmaciones falsas corregidas:
+  - Seccion 2.3 (roles): el auditor ya no se describe como alguien que accede a los logs por una UI del frontend; ahora se aclara que cuenta con el permiso `auditoria:leer` y que consume el endpoint backend `GET /auditoria`, y se deja explicito que NO hay UI de auditoria en esta entrega. El admin se describe como superset de permisos sin UI administrativa ni endpoints de administracion expuestos.
+  - Seccion 7.1 (endpoints): el endpoint `GET /auditoria` se describe correctamente como recurso backend protegido por `auditoria:leer`, aclarando que no tiene pantalla frontend asociada en la entrega.
+  - Seccion 11.7 (roles del seed): la descripcion del admin deja explicito que los permisos `admin:usuarios`, `admin:roles` y `admin:config` estan seedeados pero que hoy no hay ni UI administrativa ni endpoints backend de administracion expuestos, y que en la practica el admin se diferencia del consultor unicamente como superset operativo sobre consulta y auditoria.
+  - Seccion 13.1 (casos de uso): se elimina la frase "el Auditor solo consulta logs" y se aclara que los casos de uso "consultar logs" y "gestionar usuarios" existen a nivel modelo, pero en la entrega actual "consultar logs" vive solo como endpoint backend y "gestionar usuarios" queda como alcance futuro.
+  - Seccion 14.5 (flujo de auditoria): se reescribe completo. Antes describia pasos de una UI inexistente (usuario auditor entra a la UI, aplica filtros). Ahora distingue dos caras: auditoria automatica (transversal y activa hoy) y lectura del log via el endpoint `GET /auditoria` sin pantalla propia, indicando que se consume con un cliente HTTP autenticado como curl o Postman.
+  - Seccion 16 (guion minuto 1:00 - 3:00): se elimina la promesa "un administrador gestiona el sistema" y se la reemplaza por "el administrador queda definido como superset de permisos, a la espera de una UI administrativa fuera de alcance de esta entrega", alineando el guion con el estado real.
+  - Seccion 17.12 (pregunta sobre UI admin): la respuesta deja claro que el admin hoy funciona como superset sobre las mismas pantallas operativas del consultor y sobre el endpoint backend de auditoria, sin UI ni endpoints de administracion expuestos.
+- Enlaces corregidos:
+  - El archivo vive en `SECCAP/docs-tecnicos/`. Se normalizaron todos los links internos Markdown para que resuelvan desde esa ubicacion:
+    - `](SECCAP/...)` -> `](../...)` (todos los archivos del backend, frontend y mock-api del producto).
+    - `](UML/...)` -> `](../../UML/...)` (los 10 diagramas PlantUML y el indice `UML/`).
+    - `](DOCUMENTOS/...)` -> `](../../DOCUMENTOS/...)` (referencias a `09_requisitos.md` y `12_cierre.md`).
+    - `](scripts/...)` -> `](../../scripts/...)` (`qa-local.ps1`).
+  - Se verifico la existencia de cada target (`scripts/qa-local.ps1`, `UML/01_casos_uso_general.puml` ... `UML/10_er_bd_local.puml`, rutas bajo `SECCAP/backend/`, `SECCAP/frontend/`, `SECCAP/mock-api/`, `DOCUMENTOS/`).
+- Archivos contrastados durante la correccion (solo lectura):
+  - `SECCAP/frontend/src/router/AppRouter.tsx` -> confirma que las rutas expuestas son unicamente `/login`, `/app` y `/app/consulta`, sin ruta de auditoria ni de administracion.
+  - `SECCAP/backend/prisma/seed.ts` -> confirma la distribucion de permisos por rol (consultor, auditor y admin con sus respectivos permisos seedeados, incluidos `admin:usuarios`, `admin:roles`, `admin:config`).
+  - `SECCAP/backend/src/app.ts` -> confirma el montaje del router `GET /auditoria` como endpoint backend real.
+  - `DOCUMENTOS/12_cierre.md` -> confirma que la UI administrativa queda explicitamente documentada como alcance futuro.
+- Restricciones respetadas:
+  - No se toco codigo fuente, ni backend, ni frontend, ni `docs-uml/`.
+  - No se hizo commit ni push.
+  - No se reescribio la historia previa de la bitacora. Se avanza al siguiente numero libre (061), respetando la duplicacion previa de `Entrada 058`.
+- Resumen para revision de Codex:
+  - La guia ya no promete una UI de auditoria ni presenta al admin como gestor operativo del sistema en esta entrega.
+  - La guia distingue claramente entre lo seedeado, lo implementado a nivel backend y lo implementado con UI.
+  - Los enlaces internos Markdown estan resueltos correctamente desde `SECCAP/docs-tecnicos/` y apuntan a archivos existentes.
+  - El resto del contenido pedagogico y del guion de exposicion se mantuvo intacto, sin agregar material nuevo mas alla de lo estrictamente necesario para sanear los puntos bloqueantes.
+
+TERMINADO PARA REVISION DE CODEX

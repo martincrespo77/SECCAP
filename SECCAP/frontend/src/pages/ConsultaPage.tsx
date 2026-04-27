@@ -1,5 +1,5 @@
 import { AlertCircle, ChevronLeft, ChevronRight, Eye, Loader2, Search } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import {
   getAptitudes,
   getCategoriasMilitares,
@@ -10,6 +10,8 @@ import {
 } from '../api/catalogos.ts';
 import { ejecutarConsulta } from '../api/consulta.ts';
 import type { ApiError } from '../api/http.ts';
+import { AuthContext } from '../auth/auth-context.ts';
+import { resolveRoleTheme } from '../auth/role-theme.ts';
 import { FormacionDetalleDrawer } from '../components/FormacionDetalleDrawer.tsx';
 import type { AptitudItem, CategoriaMilitar, IdiomaItem, InstitucionItem, NivelIdiomaItem, TipoFormacion } from '../types/catalogos.ts';
 import type { ConsultaResponse } from '../types/consulta.ts';
@@ -91,6 +93,12 @@ function errorMessage(err: unknown): string {
 // ── página principal ──────────────────────────────────────────────────────────
 
 export function ConsultaPage() {
+  // Usamos el contexto de auth de manera tolerante para permitir montar
+  // esta pantalla en tests aislados sin AuthProvider. En runtime real,
+  // la ruta está protegida y el provider siempre está presente.
+  const authCtx = useContext(AuthContext);
+  const theme = resolveRoleTheme(authCtx?.user?.roles);
+
   // Catálogos estáticos (cargan una vez)
   const [tipos, setTipos] = useState<TipoFormacion[]>([]);
   const [categorias, setCategorias] = useState<CategoriaMilitar[]>([]);
@@ -285,11 +293,21 @@ export function ConsultaPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-lg font-semibold text-slate-900">Consulta de Formación</h2>
-        <p className="mt-1 text-sm text-slate-500">
-          Seleccioná el tipo de formación y completá los filtros para realizar la consulta.
-        </p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h2 className="text-lg font-semibold text-slate-900">Consulta de Formación</h2>
+          <p className="mt-1 text-sm text-slate-500">
+            Seleccioná el tipo de formación y completá los filtros para realizar la consulta.
+          </p>
+        </div>
+        <span
+          aria-label={`Rol activo: ${theme.label}`}
+          className={theme.badge}
+          data-role={theme.role}
+          data-testid="consulta-role-badge"
+        >
+          {theme.label}
+        </span>
       </div>
 
       <form
@@ -401,7 +419,8 @@ export function ConsultaPage() {
             {tipoFormacion === 'militar' && !categoriaMilitar && 'Podés buscar sin categoría o elegir una para filtrar aptitudes.'}
           </p>
           <button
-            className="inline-flex items-center gap-2 rounded-full bg-blue-900 px-6 py-2.5 text-sm font-semibold text-white shadow-[0_8px_24px_-12px_rgba(30,64,175,0.8)] transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-40"
+            className={theme.primaryButton}
+            data-testid="consulta-submit"
             disabled={!puedeBuscar}
             type="submit"
           >
@@ -461,7 +480,7 @@ export function ConsultaPage() {
                       <td className="px-6 py-3 text-slate-600">{item.grado}</td>
                       <td className="px-6 py-3 text-slate-600">{item.unidad}</td>
                       <td className="px-6 py-3">
-                        <span className="inline-block rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700 capitalize">
+                        <span className={theme.dataPill} data-testid="consulta-tipo-pill">
                           {item.tipoFormacion}
                         </span>
                       </td>

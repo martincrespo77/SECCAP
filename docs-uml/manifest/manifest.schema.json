@@ -1,0 +1,229 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "docs-uml-manifest-v1",
+  "title": "docs-uml Manifest Schema",
+  "description": "Schema for the docs-uml module manifest. Declares nodes, layers, relations, and diagrams for interactive UML visualization.",
+  "type": "object",
+  "required": ["project", "layers", "nodes", "relations", "diagrams"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Reference to this JSON Schema file."
+    },
+    "project": {
+      "type": "object",
+      "description": "Project-level metadata.",
+      "required": ["name", "version"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Human-readable project name."
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+",
+          "description": "Semantic version of the project."
+        },
+        "description": {
+          "type": "string",
+          "description": "Short description of the project."
+        },
+        "repository": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL of the project repository (optional)."
+        },
+        "stack": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Technology stack tags (e.g., ['Node.js', 'React', 'PostgreSQL'])."
+        }
+      }
+    },
+    "layers": {
+      "type": "array",
+      "description": "Architectural layers used to group nodes visually and logically.",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "name"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]*$",
+            "description": "Unique layer identifier (lowercase, hyphens allowed)."
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Display name of the layer."
+          },
+          "color": {
+            "type": "string",
+            "pattern": "^#[0-9A-Fa-f]{6}$",
+            "description": "Hex color for the layer (e.g., '#3B82F6')."
+          },
+          "description": {
+            "type": "string",
+            "description": "Brief description of the layer's responsibility."
+          },
+          "order": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Display order (0 = top). Lower numbers rendered first."
+          }
+        }
+      }
+    },
+    "nodes": {
+      "type": "array",
+      "description": "Architectural components, modules, or entities.",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "layer"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]*$",
+            "description": "Unique node identifier."
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Display name of the node."
+          },
+          "layer": {
+            "type": "string",
+            "description": "ID of the layer this node belongs to."
+          },
+          "type": {
+            "type": "string",
+            "enum": ["module", "service", "database", "api", "component", "external", "library", "middleware", "entity", "other"],
+            "description": "Type of the architectural element."
+          },
+          "description": {
+            "type": "string",
+            "description": "Brief description of the node."
+          },
+          "sourcePath": {
+            "type": "string",
+            "description": "Relative path to source code directory or file (STRIPPED during public sanitization)."
+          },
+          "diagrams": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "IDs of related diagrams."
+          },
+          "tags": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Searchable tags for filtering."
+          },
+          "visibility": {
+            "type": "string",
+            "enum": ["internal", "public"],
+            "default": "internal",
+            "description": "Whether this node is included in public output."
+          }
+        }
+      }
+    },
+    "relations": {
+      "type": "array",
+      "description": "Directed relationships between nodes.",
+      "items": {
+        "type": "object",
+        "required": ["from", "to", "type"],
+        "additionalProperties": false,
+        "properties": {
+          "from": {
+            "type": "string",
+            "description": "Source node ID."
+          },
+          "to": {
+            "type": "string",
+            "description": "Target node ID."
+          },
+          "type": {
+            "type": "string",
+            "enum": ["uses", "depends-on", "calls", "extends", "implements", "contains", "reads", "writes", "proxies", "authenticates", "audits", "other"],
+            "description": "Type of relationship."
+          },
+          "label": {
+            "type": "string",
+            "description": "Human-readable label for the edge."
+          },
+          "visibility": {
+            "type": "string",
+            "enum": ["internal", "public"],
+            "default": "internal"
+          }
+        }
+      }
+    },
+    "diagrams": {
+      "type": "array",
+      "description": "Catalog of UML diagrams with source paths and metadata.",
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "type", "source"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9_-]*$",
+            "description": "Unique diagram identifier."
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Human-readable title."
+          },
+          "type": {
+            "type": "string",
+            "enum": ["use-case", "class", "sequence", "activity", "component", "deployment", "er", "state", "package", "object", "flowchart", "architecture", "other"],
+            "description": "UML diagram type."
+          },
+          "source": {
+            "type": "string",
+            "description": "Relative path to the diagram source file (.puml or .mmd)."
+          },
+          "rendered": {
+            "type": "string",
+            "description": "Relative path to the rendered diagram (auto-populated by generation script)."
+          },
+          "format": {
+            "type": "string",
+            "enum": ["plantuml", "mermaid"],
+            "description": "Source format."
+          },
+          "description": {
+            "type": "string",
+            "description": "Brief description of what the diagram shows."
+          },
+          "relatedNodes": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "IDs of nodes related to this diagram."
+          },
+          "visibility": {
+            "type": "string",
+            "enum": ["internal", "public"],
+            "default": "internal",
+            "description": "Whether this diagram is included in public output."
+          },
+          "order": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Recommended viewing order."
+          }
+        }
+      }
+    }
+  }
+}

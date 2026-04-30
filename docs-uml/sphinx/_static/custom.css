@@ -1,0 +1,45 @@
+/* docs-uml Sphinx — Custom CSS override for Furo theme */
+
+/* ── Dark mode enhancements ────────────────────────────── */
+[data-theme="dark"] {
+  --color-background-primary: #0a0e1a;
+  --color-background-secondary: #111827;
+  --color-foreground-primary: #e2e8f0;
+  --color-foreground-secondary: #94a3b8;
+}
+
+/* ── Code blocks ───────────────────────────────────────── */
+.highlight pre {
+  border-radius: 6px;
+}
+
+/* ── Tables ────────────────────────────────────────────── */
+table.docutils {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+table.docutils th,
+table.docutils td {
+  padding: 8px 12px;
+  border: 1px solid var(--color-background-border, #334155);
+}
+
+/* ── Admonitions ───────────────────────────────────────── */
+.admonition {
+  border-radius: 6px;
+}
+
+/* ── UML diagrams ──────────────────────────────────────── */
+.uml img,
+.uml object {
+  max-width: 100%;
+  height: auto;
+  border-radius: 6px;
+}
+
+/* ── Glossary ──────────────────────────────────────────── */
+dl.glossary dt {
+  font-weight: 600;
+  color: var(--color-brand-content);
+}

@@ -16,3 +16,19 @@ Esta carpeta contiene documentación técnica de implementación, operación, QA
 - Manual de usuario: [../docs/manual_usuario.md](../docs/manual_usuario.md)
 - Guía técnica general del monorepo: [../README.md](../README.md)
 - Documentación PMBOK y UML: raíz del repositorio (`DOCUMENTOS/`, `UML/`).
+
+## docs-uml
+
+Para regenerar toda la documentación UML desde la terminal del editor:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\docs-uml-local.ps1
+```
+
+Eso deja generado `docs-uml/output/PREVIEW.md`, útil para ver los SVG desde el editor sin navegador.
+
+Si querés además la vista HTML interactiva y Sphinx servidas localmente:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\docs-uml-local.ps1 -Serve
+```

@@ -1,0 +1,92 @@
+@startuml
+title SECCAP - Diagrama de componentes de arquitectura
+left to right direction
+skinparam componentStyle rectangle
+
+actor "Usuario" as User
+
+package "Frontend SPA" {
+  [Login]
+  [Dashboard]
+  [Consulta]
+  [Resultados]
+  [Detalle]
+  [Auditoria UI]
+  [Admin UI]
+}
+
+package "Backend Proxy" {
+  [Middleware Auth]
+  [Middleware RBAC]
+  [Middleware CORS/RateLimit]
+  [Modulo Auth y Sesion]
+  [Modulo Consulta]
+  [Modulo Catalogos]
+  [Modulo Auditoria]
+  [Modulo Administracion]
+  [Health Check]
+}
+
+package "Capa de Integracion" {
+  [Adaptador API Personal]
+  [Cliente HTTP]
+  [Mapper Respuesta API]
+}
+
+database "BD Local\nusuarios, roles, permisos,\nauditoria, sesiones,\nconfiguracion, cache" as DB
+cloud "API Institucional RRHH\nRead-Only / JSON" as API
+
+User --> [Login]
+User --> [Dashboard]
+User --> [Consulta]
+User --> [Resultados]
+User --> [Detalle]
+User --> [Auditoria UI]
+User --> [Admin UI]
+
+[Login] --> [Middleware Auth]
+[Dashboard] --> [Middleware Auth]
+[Consulta] --> [Middleware Auth]
+[Resultados] --> [Middleware Auth]
+[Detalle] --> [Middleware Auth]
+[Auditoria UI] --> [Middleware Auth]
+[Admin UI] --> [Middleware Auth]
+
+[Middleware Auth] --> [Middleware RBAC]
+[Middleware RBAC] --> [Modulo Auth y Sesion]
+[Middleware RBAC] --> [Modulo Consulta]
+[Middleware RBAC] --> [Modulo Catalogos]
+[Middleware RBAC] --> [Modulo Auditoria]
+[Middleware RBAC] --> [Modulo Administracion]
+[Middleware CORS/RateLimit] --> [Modulo Consulta]
+
+[Modulo Auth y Sesion] --> [Modulo Auditoria]
+[Modulo Consulta] --> [Modulo Auditoria]
+[Modulo Administracion] --> [Modulo Auditoria]
+[Admin UI] --> [Health Check]
+
+[Modulo Consulta] --> [Adaptador API Personal]
+[Modulo Catalogos] --> [Adaptador API Personal]
+[Adaptador API Personal] --> [Cliente HTTP]
+[Adaptador API Personal] --> [Mapper Respuesta API]
+[Cliente HTTP] --> API
+[Mapper Respuesta API] --> [Modulo Consulta]
+
+[Modulo Auth y Sesion] --> DB
+[Modulo Auditoria] --> DB
+[Modulo Administracion] --> DB
+[Modulo Catalogos] --> DB
+[Health Check] --> DB
+[Health Check] --> API
+
+note bottom of DB
+  La BD local no replica datos de personal.
+  Solo almacena informacion operativa del sistema.
+end note
+
+note right of API
+  El frontend no consume esta API de forma directa.
+  Toda integracion pasa por el backend proxy.
+end note
+
+@enduml

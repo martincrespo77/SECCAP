@@ -1,0 +1,162 @@
+@startuml
+title SECCAP - Diagrama de clases de analisis BCE
+top to bottom direction
+skinparam packageStyle rectangle
+skinparam classAttributeIconSize 0
+hide empty methods
+
+package "Boundary" {
+  class PantallaLogin <<boundary>>
+  class PantallaDashboard <<boundary>>
+  class PantallaConsulta <<boundary>>
+  class PantallaResultados <<boundary>>
+  class PantallaDetalle <<boundary>>
+  class PantallaAuditoria <<boundary>>
+  class PantallaAdminUsuarios <<boundary>>
+  class PantallaEstadoSistema <<boundary>>
+  class ComponenteMensajeError <<boundary>>
+}
+
+package "Control" {
+  class ControladorAutenticacion <<control>>
+  class ControladorAutorizacion <<control>>
+  class ControladorConsulta <<control>>
+  class ControladorCatalogos <<control>>
+  class ControladorAuditoria <<control>>
+  class ControladorAdministracion <<control>>
+  class ControladorErrores <<control>>
+  class ControladorVigencias <<control>>
+}
+
+package "Entity" {
+  class Usuario <<entity>> {
+    +id
+    +username
+    +password_hash
+    +activo
+  }
+
+  class Rol <<entity>> {
+    +id
+    +nombre
+    +descripcion
+  }
+
+  class Permiso <<entity>> {
+    +id
+    +codigo
+    +modulo
+  }
+
+  class RegistroAuditoria <<entity>> {
+    +id
+    +id_usuario
+    +timestamp_utc
+    +accion
+    +resultado
+  }
+
+  class Sesion <<entity>> {
+    +id
+    +token
+    +fecha_expiracion
+    +activa
+  }
+
+  class ConfiguracionSistema <<entity>> {
+    +clave
+    +valor
+  }
+
+  class CatalogoCache <<entity>> {
+    +tipo_catalogo
+    +contenido_json
+    +ttl
+    +vigente
+  }
+
+  class ResultadoConsulta <<entity>> {
+    +registros[]
+    +total
+    +timestamp
+  }
+
+  class FiltroConsulta <<entity>> {
+    +tipo_formacion
+    +categoria
+    +aptitud
+    +filtros_transversales
+  }
+}
+
+package "Integration" {
+  class AdaptadorAPIPersonal <<integration>>
+  class ClienteHTTP <<integration>>
+  class MapperRespuestaAPI <<integration>>
+}
+
+PantallaLogin --> ControladorAutenticacion
+PantallaDashboard --> ControladorAutorizacion
+PantallaConsulta --> ControladorConsulta
+PantallaConsulta --> ControladorCatalogos
+PantallaResultados --> ControladorConsulta
+PantallaDetalle --> ControladorConsulta
+PantallaAuditoria --> ControladorAuditoria
+PantallaAdminUsuarios --> ControladorAdministracion
+PantallaEstadoSistema --> ControladorErrores
+ControladorErrores --> ComponenteMensajeError
+
+ControladorAutenticacion --> Usuario
+ControladorAutenticacion --> Sesion
+ControladorAutenticacion --> ControladorAuditoria
+
+ControladorAutorizacion --> Rol
+ControladorAutorizacion --> Permiso
+
+ControladorConsulta --> ControladorAutorizacion
+ControladorConsulta --> ControladorVigencias
+ControladorConsulta --> AdaptadorAPIPersonal
+ControladorConsulta --> ResultadoConsulta
+ControladorConsulta --> FiltroConsulta
+ControladorConsulta --> ControladorAuditoria
+ControladorConsulta --> ControladorErrores
+
+ControladorCatalogos --> CatalogoCache
+ControladorCatalogos --> AdaptadorAPIPersonal
+
+ControladorAuditoria --> RegistroAuditoria
+ControladorAdministracion --> Usuario
+ControladorAdministracion --> Rol
+ControladorAdministracion --> Permiso
+ControladorAdministracion --> ConfiguracionSistema
+ControladorAdministracion --> ControladorAuditoria
+ControladorErrores --> ControladorAuditoria
+ControladorVigencias --> ResultadoConsulta
+
+AdaptadorAPIPersonal --> ClienteHTTP
+AdaptadorAPIPersonal --> MapperRespuestaAPI
+MapperRespuestaAPI --> ResultadoConsulta
+
+Usuario "1" -- "0..*" Sesion
+Usuario "*" -- "*" Rol
+Rol "*" -- "*" Permiso
+RegistroAuditoria --> Usuario
+
+note right of AdaptadorAPIPersonal
+  Implementa el patron
+  Adapter / Anti-Corruption Layer
+  para aislar al sistema
+  del contrato de la API externa.
+end note
+
+note bottom of ResultadoConsulta
+  Objeto transitorio.
+  No se persiste en la BD local.
+end note
+
+note bottom of FiltroConsulta
+  Encapsula filtros validados
+  antes de invocar la API institucional.
+end note
+
+@enduml

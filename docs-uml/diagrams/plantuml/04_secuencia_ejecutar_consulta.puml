@@ -1,0 +1,76 @@
+@startuml
+title SECCAP - Secuencia del caso de uso Ejecutar consulta
+autonumber
+
+actor "Consultor" as Consultor
+boundary "PantallaConsulta" as UI
+participant "Backend Proxy" as Backend
+control "Middleware Auth/RBAC" as Security
+control "ControladorConsulta" as Consulta
+control "ControladorAutorizacion" as Authz
+control "ControladorVigencias" as Vigencias
+control "ControladorAuditoria" as Audit
+participant "AdaptadorAPIPersonal" as Adapter
+participant "MapperRespuestaAPI" as Mapper
+database "BD Local" as DB
+collections "API Institucional RRHH" as API
+
+Consultor -> UI : Completa filtros y presiona Consultar
+UI -> UI : Validar formato basico
+UI -> Backend : GET /formacion/consulta?filtros
+Backend -> Security : validarSesionYRol()
+
+alt sesion invalida o permiso insuficiente
+  Security --> Backend : rechazo
+  Backend --> UI : 401/403 error controlado
+  UI --> Consultor : mensaje sin detalle tecnico
+else sesion valida
+  Security --> Backend : acceso permitido
+  Backend -> Consulta : ejecutarConsulta(filtros, usuario)
+  Consulta -> Authz : validarPermisosYCampos(usuario, filtros)
+  Authz --> Consulta : permisos ok
+  Consulta -> Consulta : sanitizar y validar filtros
+
+  alt filtros invalidos o incompatibles
+    Consulta -> Audit : registrarConsultaFallida(usuario, filtros, "validacion")
+    Audit -> DB : INSERT auditoria
+    Consulta --> Backend : 400 validacion fallida
+    Backend --> UI : error de validacion
+    UI --> Consultor : corregir filtros
+  else filtros validos
+    Consulta -> Adapter : consultarPersonal(filtrosValidados)
+    Adapter -> API : request REST/JSON
+
+    alt API no responde o falla
+      API --> Adapter : timeout / 5xx / error
+      Adapter --> Consulta : error de integracion
+      Consulta -> Audit : registrarConsultaFallida(usuario, filtros, "integracion")
+      Audit -> DB : INSERT auditoria
+      Consulta --> Backend : 502/504 error controlado
+      Backend --> UI : servicio externo no disponible
+      UI --> Consultor : mensaje informativo
+    else API responde
+      API --> Adapter : payload JSON
+      Adapter -> Mapper : mapearRespuesta(payload)
+      Mapper --> Consulta : resultadoConsulta
+      Consulta -> Vigencias : calcularVigenciasSiAplica(resultado)
+      Vigencias --> Consulta : resultadoEnriquecido
+      Consulta -> Authz : podarCamposSegunRol(usuario, resultado)
+      Authz --> Consulta : resultadoAutorizado
+      Consulta -> Audit : registrarConsultaExitosa(usuario, filtros, cantidad)
+      Audit -> DB : INSERT auditoria
+      Consulta --> Backend : 200 resultadoAutorizado
+      Backend --> UI : respuesta con resultados
+      UI --> Consultor : tabla, detalle o mensaje sin resultados
+    end
+  end
+end
+
+note right of Consulta
+  El frontend nunca accede
+  a la API institucional.
+  Toda consulta pasa por el proxy.
+end note
+
+@enduml
+

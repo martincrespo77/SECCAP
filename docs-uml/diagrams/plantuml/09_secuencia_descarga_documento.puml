@@ -1,0 +1,88 @@
+@startuml
+title SECCAP - Secuencia del caso de uso Descargar documento respaldatorio
+autonumber
+
+actor "Consultor" as Consultor
+boundary "PantallaDetalle" as UI
+participant "Backend Proxy" as Backend
+control "Middleware Auth/RBAC" as Security
+control "ControladorConsulta" as ConsultaCtrl
+control "ControladorAutorizacion" as Authz
+control "ControladorAuditoria" as Audit
+participant "AdaptadorAPIPersonal" as Adapter
+participant "ClienteHTTP" as HTTP
+database "BD Local" as DB
+collections "API Institucional RRHH" as API
+
+Consultor -> UI : Presiona "Descargar documento"
+UI -> Backend : GET /formacion/documento/{id}
+Backend -> Security : validarSesionYRol()
+
+alt sesión inválida o permiso insuficiente
+  Security --> Backend : rechazo
+  Backend --> UI : 401/403 error controlado
+  UI --> Consultor : acceso denegado
+else sesión válida
+  Security --> Backend : acceso permitido
+  Backend -> ConsultaCtrl : descargarDocumento(id, usuario)
+  ConsultaCtrl -> Authz : verificarPermisoDescarga(usuario, rol)
+
+  alt rol sin permiso de descarga
+    Authz --> ConsultaCtrl : permiso denegado
+    ConsultaCtrl -> Audit : registrarDescargaDenegada(usuario, id)
+    Audit -> DB : INSERT auditoria
+    ConsultaCtrl --> Backend : 403 sin permiso
+    Backend --> UI : error controlado
+    UI --> Consultor : "No tiene permisos para\ndescargar este documento"
+  else permiso concedido
+    Authz --> ConsultaCtrl : permiso ok
+    ConsultaCtrl -> Adapter : obtenerDocumento(id)
+    Adapter -> HTTP : request a endpoint de descarga
+    HTTP -> API : GET /documentos/{id}
+
+    alt API no dispone del documento
+      API --> HTTP : 404 no encontrado
+      HTTP --> Adapter : error
+      Adapter --> ConsultaCtrl : documento no disponible
+      ConsultaCtrl -> Audit : registrarDescargaFallida(usuario, id, "no encontrado")
+      Audit -> DB : INSERT auditoria
+      ConsultaCtrl --> Backend : 404 documento no disponible
+      Backend --> UI : error controlado
+      UI --> Consultor : "El documento no está\ndisponible en este momento"
+    else API falla o timeout
+      API --> HTTP : 5xx / timeout
+      HTTP --> Adapter : error de integración
+      Adapter --> ConsultaCtrl : fallo de comunicación
+      ConsultaCtrl -> Audit : registrarDescargaFallida(usuario, id, "integración")
+      Audit -> DB : INSERT auditoria
+      ConsultaCtrl --> Backend : 502 servicio no disponible
+      Backend --> UI : error controlado
+      UI --> Consultor : "Servicio temporalmente\nno disponible"
+    else API responde con archivo
+      API --> HTTP : 200 + stream/bytes
+      HTTP --> Adapter : payload binario + metadata
+      Adapter --> ConsultaCtrl : documento + tipo MIME + nombre
+      ConsultaCtrl -> Audit : registrarDescargaExitosa(usuario, id, nombre)
+      Audit -> DB : INSERT auditoria
+      ConsultaCtrl --> Backend : 200 + archivo
+      Backend --> UI : Content-Disposition: attachment
+      UI --> Consultor : descarga del archivo
+    end
+  end
+end
+
+note right of ConsultaCtrl
+  CU-09 es un «extend» de CU-08.
+  Solo se activa si el registro
+  tiene documentación disponible.
+  Prioridad: Deseable (RF-30).
+end note
+
+note right of Adapter
+  El frontend nunca descarga
+  directamente desde la API.
+  El proxy actúa como intermediario
+  incluso para archivos binarios.
+end note
+
+@enduml

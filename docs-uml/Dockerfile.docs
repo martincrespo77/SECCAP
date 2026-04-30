@@ -1,0 +1,67 @@
+# =============================================================================
+# Dockerfile.docs — Entorno aislado para generación de documentación docs-uml
+# =============================================================================
+#
+# NO es parte del runtime productivo del proyecto.
+# Solo se usa para generación de documentación.
+#
+# Uso:
+#   docker build -f Dockerfile.docs -t docs-uml .
+#   docker run --rm -v "$(pwd):/workspace" docs-uml
+#
+# Para CI/CD (GitHub Actions), ver .github/workflows/docs-build.yml
+# =============================================================================
+
+FROM python:3.12-slim
+
+LABEL maintainer="SECCAP Team"
+LABEL description="docs-uml — Entorno de generación de documentación (NO productivo)"
+
+# ── Dependencias del sistema ───────────────────────────────────────
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    # Java para PlantUML
+    default-jre-headless \
+    # Graphviz (backend de render de algunos diagramas PlantUML)
+    graphviz \
+    # Curl para descargar plantuml.jar si no está presente
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# ── PlantUML ───────────────────────────────────────────────────────
+ENV PLANTUML_VERSION=1.2024.7
+ENV PLANTUML_JAR=/opt/plantuml.jar
+
+RUN curl -sSL \
+    "https://github.com/plantuml/plantuml/releases/download/v${PLANTUML_VERSION}/plantuml-${PLANTUML_VERSION}.jar" \
+    -o "${PLANTUML_JAR}" && \
+    echo "PlantUML ${PLANTUML_VERSION} instalado en ${PLANTUML_JAR}"
+
+# Verificar Java + PlantUML
+RUN java -jar "${PLANTUML_JAR}" -version
+
+# ── Directorio de trabajo ──────────────────────────────────────────
+WORKDIR /workspace
+
+# ── Dependencias Python ────────────────────────────────────────────
+COPY requirements-docs.txt .
+RUN pip install --no-cache-dir -r requirements-docs.txt
+
+# ── Copiar fuentes del módulo ──────────────────────────────────────
+# En uso real, se monta el volumen en lugar de copiar
+COPY . .
+
+# ── Configuración de PlantUML para el entorno ──────────────────────
+ENV PLANTUML_JAR_CMD="java -jar /opt/plantuml.jar"
+
+# ── Entrypoint ─────────────────────────────────────────────────────
+# Por defecto genera todo; se puede sobreescribir con args personalizados
+CMD ["python", "scripts/generate.py", "--all"]
+
+# ── Ejemplo de uso con volúmenes ───────────────────────────────────
+# docker run --rm \
+#   -v "$(pwd):/workspace" \
+#   -v "$(pwd)/output:/workspace/output" \
+#   docs-uml
+#
+# O con un paso específico:
+# docker run --rm -v "$(pwd):/workspace" docs-uml python scripts/generate.py --diagrams

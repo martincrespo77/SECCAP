@@ -1,0 +1,79 @@
+@startuml
+title SECCAP - Secuencia del caso de uso Consultar logs de auditoría
+autonumber
+
+actor "Auditor / Admin" as Auditor
+boundary "PantallaAuditoria" as UI
+participant "Backend Proxy" as Backend
+control "Middleware Auth/RBAC" as Security
+control "ControladorAuditoria" as AuditCtrl
+database "BD Local" as DB
+
+Auditor -> UI : Accede al módulo de auditoría
+UI -> Backend : GET /auditoria (con token)
+Backend -> Security : validarSesionYRol()
+
+alt sesión inválida o rol sin permiso
+  Security --> Backend : rechazo
+  Backend --> UI : 401/403 error controlado
+  UI --> Auditor : acceso denegado
+else sesión válida con rol Auditor o Admin
+  Security --> Backend : acceso permitido
+  Backend -> AuditCtrl : obtenerFiltrosDisponibles()
+  AuditCtrl -> DB : SELECT DISTINCT usuarios,\ntipos de operación
+  DB --> AuditCtrl : opciones de filtro
+  AuditCtrl --> Backend : filtros disponibles
+  Backend --> UI : 200 formulario con opciones
+  UI --> Auditor : presenta filtros:\nfechas, usuario, operación, resultado
+end
+
+...
+
+Auditor -> UI : Aplica filtros y ejecuta búsqueda
+UI -> UI : Validar rango de fechas
+UI -> Backend : GET /auditoria/logs?filtros
+Backend -> Security : validarSesionYRol()
+Security --> Backend : acceso permitido
+Backend -> AuditCtrl : consultarLogs(filtros, paginación)
+AuditCtrl -> AuditCtrl : sanitizar filtros
+AuditCtrl -> DB : SELECT * FROM audit_logs\nWHERE filtros\nORDER BY timestamp DESC\nLIMIT/OFFSET
+DB --> AuditCtrl : registros paginados + total
+
+alt hay registros
+  AuditCtrl --> Backend : 200 logs + metadata paginación
+  Backend --> UI : respuesta con registros
+  UI --> Auditor : tabla paginada ordenada por fecha desc
+else sin registros
+  AuditCtrl --> Backend : 200 lista vacía
+  Backend --> UI : respuesta vacía
+  UI --> Auditor : "Sin registros para los filtros aplicados"
+end
+
+...
+
+Auditor -> UI : Selecciona un registro para ver detalle
+UI -> Backend : GET /auditoria/logs/{id}
+Backend -> Security : validarSesionYRol()
+Security --> Backend : acceso permitido
+Backend -> AuditCtrl : obtenerDetalle(id)
+AuditCtrl -> DB : SELECT * FROM audit_logs WHERE id = ?
+DB --> AuditCtrl : registro completo
+AuditCtrl --> Backend : 200 detalle del registro
+Backend --> UI : detalle con filtros aplicados,\nresultado, IP, timestamp
+UI --> Auditor : vista de detalle del log
+
+note right of AuditCtrl
+  Los registros de auditoría
+  son inmutables (solo INSERT).
+  Este módulo solo permite lectura.
+end note
+
+note right of DB
+  Campos del registro:
+  - id, id_usuario, timestamp_utc
+  - acción, endpoint, filtros
+  - resultado, cantidad, ip_origen
+  - status_code
+end note
+
+@enduml

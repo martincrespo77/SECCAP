@@ -1,0 +1,401 @@
+{
+  "$schema": "./manifest.schema.json",
+  "project": {
+    "name": "SECCAP",
+    "version": "0.1.0",
+    "description": "Sistema del Ejército de Consulta Segura de Capacidades y Aptitudes del Personal",
+    "repository": "https://github.com/martincrespo77/SECCAP",
+    "stack": ["Node.js 22", "Express 5", "TypeScript 5", "React 19", "Vite 6", "Tailwind CSS 4", "PostgreSQL 16", "Prisma 7"]
+  },
+
+  "layers": [
+    {
+      "id": "frontend",
+      "name": "Frontend (SPA)",
+      "color": "#3B82F6",
+      "description": "Interfaz web — React 19 + TypeScript + Vite + Tailwind CSS. SPA con filtros jerárquicos, consulta, detalle y descarga.",
+      "order": 0
+    },
+    {
+      "id": "backend",
+      "name": "Backend Proxy",
+      "color": "#10B981",
+      "description": "Capa de integración — Node.js 22 + Express 5. Validación, proxy a API institucional, poda por rol, auditoría.",
+      "order": 1
+    },
+    {
+      "id": "persistence",
+      "name": "Persistencia Local",
+      "color": "#F59E0B",
+      "description": "Base de datos local — PostgreSQL 16 + Prisma 7. Usuarios, roles, permisos, sesiones, auditoría, configuración, caché.",
+      "order": 2
+    },
+    {
+      "id": "external",
+      "name": "API Institucional",
+      "color": "#EF4444",
+      "description": "API del Área de Personal (solo lectura). Fuente institucional de formaciones, capacitaciones y aptitudes.",
+      "order": 3
+    },
+    {
+      "id": "security",
+      "name": "Seguridad y Auditoría",
+      "color": "#8B5CF6",
+      "description": "Corte transversal — Autenticación JWT, RBAC, mínimo privilegio, auditoría inmutable.",
+      "order": 4
+    }
+  ],
+
+  "nodes": [
+    {
+      "id": "spa-app",
+      "name": "Aplicación SPA",
+      "layer": "frontend",
+      "type": "component",
+      "description": "Shell de la aplicación React con router, autenticación y layout por roles.",
+      "sourcePath": "SECCAP/frontend/src/",
+      "tags": ["react", "spa", "router", "auth"],
+      "visibility": "public"
+    },
+    {
+      "id": "filtros-jerarquicos",
+      "name": "Filtros Jerárquicos",
+      "layer": "frontend",
+      "type": "component",
+      "description": "Componente de filtros dependientes: tipo formación → categoría → aptitud/capacitación.",
+      "sourcePath": "SECCAP/frontend/src/pages/ConsultaPage.tsx",
+      "diagrams": ["05_actividad_flujo_consulta"],
+      "tags": ["filtros", "consulta", "catálogos"],
+      "visibility": "public"
+    },
+    {
+      "id": "api-proxy",
+      "name": "Proxy de API",
+      "layer": "backend",
+      "type": "service",
+      "description": "Middleware Express que valida filtros, consulta la API institucional, poda resultados por rol y registra auditoría.",
+      "sourcePath": "SECCAP/backend/src/",
+      "diagrams": ["04_secuencia_ejecutar_consulta", "06_componentes_arquitectura"],
+      "tags": ["proxy", "express", "validación", "poda"],
+      "visibility": "public"
+    },
+    {
+      "id": "auth-module",
+      "name": "Autenticación",
+      "layer": "security",
+      "type": "module",
+      "description": "Módulo de autenticación JWT con login, sesión y cierre de sesión.",
+      "sourcePath": "SECCAP/backend/src/auth/",
+      "diagrams": ["03_secuencia_login"],
+      "tags": ["jwt", "login", "sesión", "auth"],
+      "visibility": "public"
+    },
+    {
+      "id": "rbac-module",
+      "name": "Control de Acceso (RBAC)",
+      "layer": "security",
+      "type": "module",
+      "description": "Roles (admin, consultor, auditor), permisos y mínimo privilegio.",
+      "sourcePath": "SECCAP/backend/src/middleware/",
+      "diagrams": ["01_casos_uso_general", "02_clases_analisis_bce"],
+      "tags": ["rbac", "roles", "permisos", "middleware"],
+      "visibility": "public"
+    },
+    {
+      "id": "audit-service",
+      "name": "Servicio de Auditoría",
+      "layer": "security",
+      "type": "service",
+      "description": "Registro inmutable de acciones: consultas, descargas, cambios administrativos.",
+      "sourcePath": "SECCAP/backend/src/audit/",
+      "diagrams": ["08_secuencia_consulta_auditoria"],
+      "tags": ["auditoría", "logs", "inmutable", "trazabilidad"],
+      "visibility": "public"
+    },
+    {
+      "id": "db-local",
+      "name": "Base de Datos Local",
+      "layer": "persistence",
+      "type": "database",
+      "description": "PostgreSQL 16 con Prisma ORM. Tablas: sys_usuario, sys_rol, sys_permiso, sys_sesion, audit_log, sys_configuracion, cache_catalogo.",
+      "sourcePath": "SECCAP/backend/prisma/schema.prisma",
+      "diagrams": ["10_er_bd_local"],
+      "tags": ["postgresql", "prisma", "bd", "esquema"],
+      "visibility": "public"
+    },
+    {
+      "id": "api-institucional",
+      "name": "API del Área de Personal",
+      "layer": "external",
+      "type": "external",
+      "description": "API institucional de solo lectura que provee formaciones, capacitaciones, aptitudes e idiomas del personal.",
+      "diagrams": ["04_secuencia_ejecutar_consulta", "09_secuencia_descarga_documento"],
+      "tags": ["api", "institucional", "personal", "rrhh", "externa"],
+      "visibility": "public"
+    },
+    {
+      "id": "health-monitor",
+      "name": "Health Check",
+      "layer": "backend",
+      "type": "service",
+      "description": "Endpoint /health que verifica estado del backend y conectividad con BD.",
+      "sourcePath": "SECCAP/backend/src/routes/health.ts",
+      "diagrams": ["07_despliegue_logico"],
+      "tags": ["health", "monitoreo", "disponibilidad"],
+      "visibility": "public"
+    },
+    {
+      "id": "catalogos-service",
+      "name": "Servicio de Catálogos",
+      "layer": "backend",
+      "type": "service",
+      "description": "Gestión de catálogos dependientes: tipos de formación, categorías, aptitudes, idiomas, niveles, instituciones.",
+      "sourcePath": "SECCAP/backend/src/formacion/",
+      "diagrams": ["05_actividad_flujo_consulta"],
+      "tags": ["catálogos", "formación", "categorías", "aptitudes"],
+      "visibility": "public"
+    },
+    {
+      "id": "descarga-service",
+      "name": "Servicio de Descarga",
+      "layer": "backend",
+      "type": "service",
+      "description": "Proxy de descarga de documentos respaldatorios desde la API institucional.",
+      "sourcePath": "SECCAP/backend/src/formacion/",
+      "diagrams": ["09_secuencia_descarga_documento"],
+      "tags": ["descarga", "certificado", "proxy", "documento"],
+      "visibility": "public"
+    },
+    {
+      "id": "mock-api",
+      "name": "Mock API (desarrollo)",
+      "layer": "external",
+      "type": "service",
+      "description": "Servicio Node.js que simula la API institucional con dataset realista de 25 formaciones y catálogos completos.",
+      "sourcePath": "SECCAP/mock-api/src/",
+      "tags": ["mock", "desarrollo", "testing"],
+      "visibility": "internal"
+    }
+  ],
+
+  "relations": [
+    {
+      "from": "spa-app",
+      "to": "api-proxy",
+      "type": "calls",
+      "label": "HTTP /api/*",
+      "visibility": "public"
+    },
+    {
+      "from": "spa-app",
+      "to": "filtros-jerarquicos",
+      "type": "contains",
+      "label": "renderiza",
+      "visibility": "public"
+    },
+    {
+      "from": "api-proxy",
+      "to": "api-institucional",
+      "type": "proxies",
+      "label": "consulta formaciones (proxy)",
+      "visibility": "public"
+    },
+    {
+      "from": "api-proxy",
+      "to": "auth-module",
+      "type": "uses",
+      "label": "valida JWT",
+      "visibility": "public"
+    },
+    {
+      "from": "api-proxy",
+      "to": "rbac-module",
+      "type": "uses",
+      "label": "verifica permisos",
+      "visibility": "public"
+    },
+    {
+      "from": "api-proxy",
+      "to": "audit-service",
+      "type": "uses",
+      "label": "registra acción",
+      "visibility": "public"
+    },
+    {
+      "from": "api-proxy",
+      "to": "catalogos-service",
+      "type": "uses",
+      "label": "carga catálogos",
+      "visibility": "public"
+    },
+    {
+      "from": "auth-module",
+      "to": "db-local",
+      "type": "reads",
+      "label": "valida credenciales, crea sesión",
+      "visibility": "public"
+    },
+    {
+      "from": "rbac-module",
+      "to": "db-local",
+      "type": "reads",
+      "label": "consulta roles y permisos",
+      "visibility": "public"
+    },
+    {
+      "from": "audit-service",
+      "to": "db-local",
+      "type": "writes",
+      "label": "INSERT audit_log (inmutable)",
+      "visibility": "public"
+    },
+    {
+      "from": "descarga-service",
+      "to": "api-institucional",
+      "type": "proxies",
+      "label": "descarga certificado vía proxy",
+      "visibility": "public"
+    },
+    {
+      "from": "descarga-service",
+      "to": "audit-service",
+      "type": "uses",
+      "label": "registra descarga",
+      "visibility": "public"
+    },
+    {
+      "from": "health-monitor",
+      "to": "db-local",
+      "type": "reads",
+      "label": "SELECT 1 (health check)",
+      "visibility": "public"
+    },
+    {
+      "from": "catalogos-service",
+      "to": "api-institucional",
+      "type": "calls",
+      "label": "carga catálogos desde API",
+      "visibility": "public"
+    },
+    {
+      "from": "api-proxy",
+      "to": "mock-api",
+      "type": "proxies",
+      "label": "en desarrollo, simula API institucional",
+      "visibility": "internal"
+    }
+  ],
+
+  "diagrams": [
+    {
+      "id": "01_casos_uso_general",
+      "title": "Casos de Uso General",
+      "type": "use-case",
+      "source": "diagrams/plantuml/01_casos_uso_general.puml",
+      "format": "plantuml",
+      "description": "Actores principales (Usuario, Admin, Consultor, Auditor) y 15 casos de uso con relaciones include/extend.",
+      "relatedNodes": ["rbac-module", "auth-module", "api-proxy"],
+      "visibility": "public",
+      "order": 1
+    },
+    {
+      "id": "02_clases_analisis_bce",
+      "title": "Clases de Análisis BCE",
+      "type": "class",
+      "source": "diagrams/plantuml/02_clases_analisis_bce.puml",
+      "format": "plantuml",
+      "description": "Modelo de análisis Boundary-Control-Entity: fronteras, controladores y entidades del sistema.",
+      "relatedNodes": ["rbac-module", "api-proxy"],
+      "visibility": "public",
+      "order": 2
+    },
+    {
+      "id": "03_secuencia_login",
+      "title": "Secuencia de Login",
+      "type": "sequence",
+      "source": "diagrams/plantuml/03_secuencia_login.puml",
+      "format": "plantuml",
+      "description": "Flujo completo de autenticación: credenciales, validación, JWT, sesión y auditoría.",
+      "relatedNodes": ["auth-module", "db-local"],
+      "visibility": "public",
+      "order": 3
+    },
+    {
+      "id": "04_secuencia_ejecutar_consulta",
+      "title": "Secuencia de Consulta",
+      "type": "sequence",
+      "source": "diagrams/plantuml/04_secuencia_ejecutar_consulta.puml",
+      "format": "plantuml",
+      "description": "Validación de filtros, proxy a API institucional, poda por rol y auditoría de consulta.",
+      "relatedNodes": ["api-proxy", "api-institucional", "audit-service"],
+      "visibility": "public",
+      "order": 4
+    },
+    {
+      "id": "05_actividad_flujo_consulta",
+      "title": "Actividad — Flujo de Consulta",
+      "type": "activity",
+      "source": "diagrams/plantuml/05_actividad_flujo_consulta.puml",
+      "format": "plantuml",
+      "description": "Flujo operativo completo de una consulta desde selección de filtros hasta resultados.",
+      "relatedNodes": ["filtros-jerarquicos", "catalogos-service", "api-proxy"],
+      "visibility": "public",
+      "order": 5
+    },
+    {
+      "id": "06_componentes_arquitectura",
+      "title": "Componentes y Arquitectura",
+      "type": "component",
+      "source": "diagrams/plantuml/06_componentes_arquitectura.puml",
+      "format": "plantuml",
+      "description": "Frontend SPA, backend proxy, ACL, BD local y API externa como componentes desacoplados.",
+      "relatedNodes": ["spa-app", "api-proxy", "db-local", "api-institucional"],
+      "visibility": "public",
+      "order": 6
+    },
+    {
+      "id": "07_despliegue_logico",
+      "title": "Despliegue Lógico",
+      "type": "deployment",
+      "source": "diagrams/plantuml/07_despliegue_logico.puml",
+      "format": "plantuml",
+      "description": "Nodos lógicos (servidor web, servidor app, BD, API externa) con enlaces y restricciones de seguridad.",
+      "relatedNodes": ["health-monitor"],
+      "visibility": "public",
+      "order": 7
+    },
+    {
+      "id": "08_secuencia_consulta_auditoria",
+      "title": "Secuencia — Consulta de Auditoría",
+      "type": "sequence",
+      "source": "diagrams/plantuml/08_secuencia_consulta_auditoria.puml",
+      "format": "plantuml",
+      "description": "Acceso al módulo de auditoría, filtrado, paginación y detalle de registro de log.",
+      "relatedNodes": ["audit-service", "db-local"],
+      "visibility": "public",
+      "order": 8
+    },
+    {
+      "id": "09_secuencia_descarga_documento",
+      "title": "Secuencia — Descarga de Documento",
+      "type": "sequence",
+      "source": "diagrams/plantuml/09_secuencia_descarga_documento.puml",
+      "format": "plantuml",
+      "description": "Verificación de permisos, descarga vía proxy, manejo de errores (404, timeout, éxito).",
+      "relatedNodes": ["descarga-service", "api-institucional"],
+      "visibility": "public",
+      "order": 9
+    },
+    {
+      "id": "10_er_bd_local",
+      "title": "Entidad-Relación — BD Local",
+      "type": "er",
+      "source": "diagrams/plantuml/10_er_bd_local.puml",
+      "format": "plantuml",
+      "description": "Esquema de 9 tablas: usuarios, roles, permisos, sesiones, auditoría, configuración y caché de catálogos.",
+      "relatedNodes": ["db-local"],
+      "visibility": "public",
+      "order": 10
+    }
+  ]
+}

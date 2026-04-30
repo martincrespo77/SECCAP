@@ -1,0 +1,63 @@
+@startuml
+title SECCAP - Diagrama de despliegue logico
+top to bottom direction
+skinparam componentStyle rectangle
+
+node "Cliente institucional" as Cliente {
+  artifact "Navegador web\nChrome / Firefox / Edge" as Browser
+}
+
+node "Servidor Web / Reverse Proxy" as Web {
+  artifact "Frontend SPA estatico\nReact + TypeScript + Vite" as Frontend
+  artifact "TLS / HTTPS" as TLS
+}
+
+node "Servidor de aplicacion" as App {
+  artifact "Backend Proxy\nNode.js 22 + Express 5\nTypeScript" as Backend
+  artifact "Middlewares\nAuth / RBAC / CORS / Rate Limit / Logging" as Middlewares
+  artifact "Health endpoint\nGET /health" as Health
+}
+
+database "PostgreSQL local" as Postgres {
+  artifact "usuarios" as T1
+  artifact "roles y permisos" as T2
+  artifact "sesiones" as T3
+  artifact "auditoria" as T4
+  artifact "configuracion" as T5
+  artifact "catalogo_cache" as T6
+}
+
+cloud "API Institucional RRHH" as Api {
+  artifact "REST/JSON Read-Only" as ApiData
+}
+
+Browser --> TLS : HTTPS
+TLS --> Frontend
+Frontend --> Backend : HTTPS / REST JSON
+Backend --> Postgres : TCP / SQL parametrizado
+Backend --> Api : HTTPS / REST JSON
+Health --> Postgres
+Health --> Api
+
+note right of Backend
+  El backend concentra:
+  - autenticacion
+  - autorizacion por rol
+  - validacion de filtros
+  - integracion con API
+  - poda de campos
+  - auditoria
+end note
+
+note bottom of Cliente
+  No existe acceso directo
+  desde el navegador a la API externa.
+end note
+
+note bottom of Postgres
+  La tabla de auditoria debe ser inmutable.
+  No se almacenan datos maestros del personal.
+end note
+
+@enduml
+

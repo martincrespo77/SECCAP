@@ -1,0 +1,60 @@
+@startuml
+title SECCAP - Secuencia del caso de uso Iniciar sesion
+autonumber
+
+actor "Usuario" as Usuario
+boundary "PantallaLogin" as Login
+participant "Backend Proxy" as Backend
+control "ControladorAutenticacion" as Auth
+database "BD Local" as DB
+control "ControladorAuditoria" as Audit
+control "ServicioSesion/JWT" as Sesion
+
+Usuario -> Login : Ingresa usuario y contrasena
+Login -> Login : Validar formato minimo
+Login -> Backend : POST /auth/login
+Backend -> Auth : autenticar(credenciales)
+Auth -> DB : buscarUsuario(username)
+DB --> Auth : usuario + hash + rol + estado
+
+alt usuario activo y credenciales validas
+  Auth -> Auth : verificar hash\ncontrolar intentos
+  Auth -> Sesion : crearSesionToken(usuario, rol)
+  Sesion --> Auth : token + expiracion
+  Auth -> Audit : registrarLoginExitoso(usuario, fecha)
+  Audit -> DB : INSERT auditoria
+  Auth --> Backend : login ok + token + rol
+  Backend --> Login : 200 respuesta autenticada
+  Login --> Usuario : acceso a dashboard segun rol
+else credenciales invalidas
+  Auth -> DB : actualizarIntentosFallidos(usuario)
+  Auth -> Audit : registrarLoginFallido(username, motivo)
+  Audit -> DB : INSERT auditoria
+  alt intentos < limite configurado
+    Auth --> Backend : 401 credenciales invalidas
+    Backend --> Login : error controlado
+    Login --> Usuario : mensaje comprensible\nsin detalle tecnico
+  else intentos >= limite configurado
+    Auth -> DB : bloquearCuentaTemporalmente(usuario)
+    Auth --> Backend : 423 cuenta bloqueada
+    Backend --> Login : error controlado
+    Login --> Usuario : cuenta bloqueada temporalmente
+  end
+else cuenta bloqueada o inactiva
+  Auth -> Audit : registrarAccesoBloqueado(username)
+  Audit -> DB : INSERT auditoria
+  Auth --> Backend : 403 acceso denegado
+  Backend --> Login : error controlado
+  Login --> Usuario : cuenta bloqueada o inactiva
+end
+
+note right of Auth
+  Requisitos cubiertos:
+  - autenticacion previa
+  - almacenamiento seguro de credenciales
+  - sesion con expiracion
+  - bloqueo por intentos fallidos
+  - auditoria obligatoria
+end note
+
+@enduml

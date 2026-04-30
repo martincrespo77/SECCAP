@@ -1,0 +1,58 @@
+@startuml
+title SECCAP - Actividad del flujo de consulta
+start
+
+:Usuario autenticado ingresa al modulo de consulta;
+:Seleccionar tipo de formacion;
+
+if (Tipo = militar?) then (si)
+  :Habilitar filtros militares;
+  :Cargar categorias militares;
+  :Si corresponde,\ncargar aptitudes dependientes;
+elseif (Tipo = idioma?) then (si)
+  :Habilitar filtros de idioma;
+  :Cargar idiomas,\nniveles e instituciones;
+else (civil)
+  :Habilitar bloque civil;\nquedando sujeto al catalogo real;
+endif
+
+:Completar filtros transversales;\nDNI, legajo, unidad, vigencia,\nfechas, texto general;
+:Validar formato e incompatibilidades;
+
+if (Filtros validos?) then (no)
+  :Mostrar errores inline;
+  stop
+endif
+
+:Enviar consulta al backend proxy;
+:Validar sesion y permisos;
+
+if (Sesion y RBAC validos?) then (no)
+  :Responder error 401/403 controlado;
+  stop
+endif
+
+:Sanitizar filtros y construir request;
+:Invocar API institucional;
+
+if (API disponible?) then (no)
+  :Registrar error en auditoria;
+  :Mostrar mensaje informativo;\npermitir seguir usando funciones locales;
+  stop
+endif
+
+:Mapear respuesta al modelo interno;
+:Calcular vigencias si la API no las resuelve;
+:Podar campos segun rol;
+:Registrar auditoria obligatoria;
+
+if (Hay resultados?) then (si)
+  :Mostrar tabla de resultados;
+  :Permitir orden, detalle\ny descarga si aplica;
+else (no)
+  :Mostrar mensaje "Sin resultados";
+endif
+
+stop
+@enduml
+

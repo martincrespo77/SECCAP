@@ -1,0 +1,158 @@
+# =============================================================================
+# .github/workflows/docs-build.yml
+# Pipeline de CI/CD para generación y publicación de documentación.
+# =============================================================================
+#
+# Triggers:
+#   - Push a rama main (con cambios en docs-uml/ o UML/)
+#   - Push a rama docs
+#   - Pull request a main (solo build, sin deploy)
+#   - Ejecución manual (workflow_dispatch)
+#
+# Pasos:
+#   1. Checkout del repositorio
+#   2. Setup Java (para PlantUML)
+#   3. Setup Python (para Sphinx y scripts)
+#   4. Instalar dependencias de documentación
+#   5. Descargar plantuml.jar
+#   6. Validar manifest.json
+#   7. Renderizar diagramas PlantUML → SVG
+#   8. Build Sphinx
+#   9. Ensamblar vista interactiva
+#  10. Sanitizar output
+#  11. Deploy a GitHub Pages (solo en push a main)
+# =============================================================================
+
+name: docs-uml — Build & Deploy
+
+on:
+  push:
+    branches: [main, docs]
+    paths:
+      - "docs-uml/**"
+      - "UML/**"
+  pull_request:
+    branches: [main]
+    paths:
+      - "docs-uml/**"
+
+  # Permitir ejecución manual
+  workflow_dispatch:
+    inputs:
+      deploy:
+        description: "Publicar en GitHub Pages?"
+        required: false
+        default: "false"
+        type: boolean
+
+# Permisos necesarios para GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Cancelar builds anteriores si hay uno nuevo
+concurrency:
+  group: docs-build-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHON_VERSION: "3.12"
+  JAVA_VERSION: "17"
+  PLANTUML_VERSION: "1.2024.7"
+  DOCS_DIR: "docs-uml"
+
+jobs:
+  # ─────────────────────────────────────────────────────────────────
+  # JOB 1: Build
+  # ─────────────────────────────────────────────────────────────────
+  build:
+    name: Build Documentation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repositorio
+        uses: actions/checkout@v4
+
+      - name: Setup Java ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: temurin
+
+      - name: Setup Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: "${{ env.DOCS_DIR }}/requirements-docs.txt"
+
+      - name: Instalar Graphviz
+        run: sudo apt-get install -y graphviz
+
+      - name: Instalar dependencias Python
+        run: pip install -r ${{ env.DOCS_DIR }}/requirements-docs.txt
+
+      - name: Descargar PlantUML JAR
+        run: |
+          mkdir -p ${{ env.DOCS_DIR }}/tools
+          curl -sSL \
+            "https://github.com/plantuml/plantuml/releases/download/v${{ env.PLANTUML_VERSION }}/plantuml-${{ env.PLANTUML_VERSION }}.jar" \
+            -o "${{ env.DOCS_DIR }}/tools/plantuml.jar"
+          echo "PlantUML ${{ env.PLANTUML_VERSION }} descargado"
+
+      - name: Validar manifest.json
+        working-directory: ${{ env.DOCS_DIR }}
+        run: python scripts/validate_manifest.py
+
+      - name: Renderizar diagramas PlantUML → SVG
+        working-directory: ${{ env.DOCS_DIR }}
+        run: python scripts/render_plantuml.py --format svg
+
+      - name: Build Sphinx
+        working-directory: ${{ env.DOCS_DIR }}
+        run: python scripts/build_sphinx.py
+        continue-on-error: true  # No bloquear si faltan extensiones
+
+      - name: Ensamblar vista interactiva
+        working-directory: ${{ env.DOCS_DIR }}
+        run: python scripts/build_interactive.py
+
+      - name: Sanitizar output
+        working-directory: ${{ env.DOCS_DIR }}
+        run: python scripts/sanitize.py
+
+      - name: Verificar SECURITY_AUDIT
+        working-directory: ${{ env.DOCS_DIR }}
+        run: cat output/SECURITY_AUDIT.txt
+
+      - name: Upload artifact de documentación
+        uses: actions/upload-artifact@v4
+        with:
+          name: docs-uml-output
+          path: ${{ env.DOCS_DIR }}/output/
+          retention-days: 30
+
+      - name: Preparar para GitHub Pages
+        if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/docs') && github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ${{ env.DOCS_DIR }}/output/interactive
+
+  # ─────────────────────────────────────────────────────────────────
+  # JOB 2: Deploy (solo en main)
+  # ─────────────────────────────────────────────────────────────────
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/docs') && github.event_name != 'pull_request'
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy a GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

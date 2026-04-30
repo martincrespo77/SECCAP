@@ -1,0 +1,25 @@
+# Entorno virtual de documentación
+.venv-docs/
+venv-docs/
+
+# Artefactos generados
+output/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# PlantUML JAR (descargable)
+*.jar
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Secretos (nunca deben existir aquí, pero por seguridad)
+.env
+.env.*

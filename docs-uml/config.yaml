@@ -1,0 +1,65 @@
+# =============================================================================
+# docs-uml — Configuración del módulo de documentación
+# =============================================================================
+# Este archivo configura el comportamiento del módulo de generación de
+# documentación UML interactiva y Sphinx.
+#
+# IMPORTANTE: No incluir secretos, contraseñas ni rutas absolutas.
+# =============================================================================
+
+project:
+  name: "SECCAP"
+  version: "0.1.0"
+  description: "Sistema del Ejército de Consulta Segura de Capacidades y Aptitudes del Personal"
+
+paths:
+  manifest: "manifest/manifest.json"
+  manifest_schema: "manifest/manifest.schema.json"
+  diagrams_plantuml: "diagrams/plantuml"
+  diagrams_mermaid: "diagrams/mermaid"
+  templates: "templates"
+  sphinx_source: "sphinx"
+  output: "output"
+  output_interactive: "output/interactive"
+  output_diagrams: "output/diagrams"
+  output_sphinx: "output/sphinx"
+
+generation:
+  plantuml:
+    # Opciones: "jar", "server", "docker"
+    method: "jar"
+    # Ruta relativa al JAR de PlantUML (descargar manualmente o via script)
+    jar_path: "tools/plantuml.jar"
+    # Formato de salida: "svg" o "png"
+    output_format: "svg"
+    # Servidor PlantUML (si method = "server")
+    server_url: "http://localhost:8080"
+  
+  mermaid:
+    # Opciones: "browser" (render en el navegador) o "mmdc" (pre-render con CLI)
+    method: "browser"
+  
+  sphinx:
+    theme: "furo"
+    language: "es"
+
+security:
+  # Visibilidad por defecto para diagramas sin campo "visibility"
+  default_visibility: "internal"
+  
+  # Patrones a eliminar durante sanitización
+  sanitize_patterns:
+    - '[A-Z]:\\\\' # Rutas Windows absolutas
+    - '/home/'     # Rutas Linux home
+    - '/Users/'    # Rutas macOS home
+    - 'API_KEY'
+    - 'SECRET'
+    - 'PASSWORD'
+    - 'TOKEN'
+    - '.env'
+
+publishing:
+  # Opciones: "github-pages", "static-server", "artifact", "none"
+  method: "none"
+  # Ruta base donde se publica (para generar URLs correctas)
+  base_url: "/docs-uml/"
